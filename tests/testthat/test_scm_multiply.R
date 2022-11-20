@@ -1,3 +1,4 @@
+# y came from https://matrix.reshish.com/multCalculation.php
 load("data/testMatrix.rda")
 data<- list(
   x = testMatrix,
