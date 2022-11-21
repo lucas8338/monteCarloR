@@ -4,7 +4,7 @@
 \alias{scm_predict}
 \title{scm_predict}
 \usage{
-scm_predict(scm, state, horizon)
+scm_predict(scm, state, horizon, steadyReady = TRUE)
 }
 \arguments{
 \item{scm}{the stochastic matrix.}
@@ -12,6 +12,8 @@ scm_predict(scm, state, horizon)
 \item{state}{the initial state. a numeric vector containing the names of the states and probabilities.}
 
 \item{horizon}{a numeric is how much simulate.}
+
+\item{steadyReady}{whether the function should stop when found the steadyReady probabilities (stable distribution).}
 }
 \value{
 a data.frame with the columns: choosen state, and the probabilities of each state.
@@ -20,5 +22,5 @@ a data.frame with the columns: choosen state, and the probabilities of each stat
 do a prediction/simulation using a naive stochastic matrix.
 }
 \references{
-#' Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.
+Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.
 }
