@@ -4,7 +4,7 @@
 \alias{scm_predict}
 \title{scm_predict}
 \usage{
-scm_predict(scm, state, horizon, steadyReady = TRUE)
+scm_predict(scm, state, horizon, steadyState = TRUE)
 }
 \arguments{
 \item{scm}{the stochastic matrix.}
@@ -13,7 +13,7 @@ scm_predict(scm, state, horizon, steadyReady = TRUE)
 
 \item{horizon}{a numeric is how much simulate.}
 
-\item{steadyReady}{whether the function should stop when found the steadyReady probabilities (stable distribution).}
+\item{steadyState}{whether the function should stop when found the steadyState probabilities (stable distribution).}
 }
 \value{
 a data.frame with the columns: choosen state, and the probabilities of each state.

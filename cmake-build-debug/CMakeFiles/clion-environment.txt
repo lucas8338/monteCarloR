@@ -1,4 +1,0 @@
-ToolSet: 5.0 (local)@C:\ProgramData\mingw
-Options: 
-
-Options:-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2022.2/bin/ninja/win/ninja.exe

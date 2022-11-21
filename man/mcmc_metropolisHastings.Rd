@@ -4,7 +4,7 @@
 \alias{mcmc_metropolisHastings}
 \title{mcmc_metropolisHastings}
 \usage{
-mcmc_metropolisHastings(scm, x_0, n, dist = scm_steadyReady(scm))
+mcmc_metropolisHastings(scm, x_0, n, dist = scm_steadyState(scm))
 }
 \arguments{
 \item{scm}{a data.frame with a stochastic matrix.}
@@ -24,7 +24,7 @@ improvement for metropolis algorithm (metropolis: 1953; hastings: 1970).
 }
 \section{expected comportment}{
 
-is expected in low samples the distribution of the results are different than the stable distribution (steadyReady)
+is expected in low samples the distribution of the results are different than the stable distribution (steadyState)
 and for long long run the distribution of the results are near equal the stable distribution.
 }
 

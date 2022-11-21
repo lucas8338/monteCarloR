@@ -1,3 +1,0 @@
-C:/Users/lucas/Desktop/projetos/monteCarloR/cmake-build-debug/CMakeFiles/monteCarloR.dir
-C:/Users/lucas/Desktop/projetos/monteCarloR/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/lucas/Desktop/projetos/monteCarloR/cmake-build-debug/CMakeFiles/rebuild_cache.dir

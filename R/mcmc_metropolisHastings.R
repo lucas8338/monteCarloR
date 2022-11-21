@@ -7,19 +7,22 @@
 #' @param dist the stable distribution (pi function).
 #' @return a character vector containing the results of sampling
 #' @section expected comportment:
-#' is expected in low samples the distribution of the results are different than the stable distribution (steadyReady)
+#' is expected in low samples the distribution of the results are different than the stable distribution (steadyState)
 #' and for long long run the distribution of the results are near equal the stable distribution.
 #' @references
 #' https://en.wikipedia.org/wiki/Metropolis–Hastings_algorithm
 #' https://stephens999.github.io/fiveMinuteStats/MH_intro.html
 #' @import dplyr
 #' @export
-mcmc_metropolisHastings<- function(scm,x_0,n,dist=scm_steadyReady(scm)){
+mcmc_metropolisHastings<- function(scm,x_0,n,dist=scm_steadyState(scm)){
   result<- c()
 
   # initialize the x_t
   x_t<- x_0
 
+  # main loop, look the first value in the array (result is empty) will be always accepted
+  # by the acceptance_probability, so at end the length(result) will be equal n ( length(result)==n ).
+  # this was tested.
   for ( i in 1:n ){
     # draw a proposed state
     # this is a character.

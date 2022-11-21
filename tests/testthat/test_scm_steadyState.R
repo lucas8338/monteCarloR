@@ -9,4 +9,11 @@ data<- list(
 x<- data[['x']]
 y<- data[['y']]
 
-testthat::expect_equal(scm_steadyReady(x),y)
+testthat::expect_equal(scm_steadyState(x),y)
+
+# for for when the eigenvalues are different than one
+load("data/testMatrix3.rda")
+x<- testMatrix3
+y<- c(A=0.3773585,B=0.4981132,C=0.1245283)
+
+testthat::expect_equal(scm_steadyState(testMatrix3),y)
