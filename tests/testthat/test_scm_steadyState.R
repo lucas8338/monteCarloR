@@ -16,4 +16,8 @@ load("data/testMatrix3.rda")
 x<- testMatrix3
 y<- c(A=0.3773585,B=0.4981132,C=0.1245283)
 
-testthat::expect_equal(scm_steadyState(testMatrix3),y)
+testthat::expect_error(scm_verifyScm(x))
+
+x<- scm_fixEigenvectorLowerThanOne(x)
+
+testthat::expect_equal(scm_steadyState(x),y)

@@ -7,5 +7,6 @@
 #' @export
 sample_distDiscrete<- function(n=1,dist){
   stopifnot("cant have NA in dist"=any(is.na(dist))==FALSE)
+  stopifnot("'dist' must be a vector with NAMES"=length(names(dist))==length(dist))
   sample(names(dist),size=n,replace = TRUE,prob=dist)
 }

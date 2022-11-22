@@ -16,11 +16,7 @@ a numeric vector with names and probabilities for each state.
 }
 \description{
 find the steadyState probabilities (stable distribution) for
-a right stochastic matrix. Rows with eigenvector that dont end on exactly one will be
-fixed using the formula:
-rowLowerValue= 1-(A-L)
-A: sum of all values in the row
-L: the lowest value in the row.
+a right stochastic matrix.
 }
 \references{
 Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.

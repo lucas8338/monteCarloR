@@ -13,4 +13,6 @@ data<- list(
 x<- data[['x']]
 y<- data[['y']]
 
-testthat::expect_equal(scm_statesTimes(x),y)
+x<- scm_fixEigenvectorLowerThanOne(x)
+
+testthat::expect_equal(scm_statesTimes(x),y,tolerance = 0.01)

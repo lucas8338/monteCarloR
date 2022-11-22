@@ -7,10 +7,8 @@
 #' https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:matrices/x9e81a4f98389efdf:multiplying-matrices-by-matrices/v/matrix-multiplication-intro
 #' @export
 scm_multiply<- function(scm1,scm2){
-  # verify if data.frames are compatibles (equals)
-  stopifnot("matrices of different dimensions cant be multiplied"=nrow(scm1)==nrow(scm2) && ncol(scm1)==ncol(scm2))
-  # verify if them are square
-  stopifnot("this dont work with retangular matrix"=nrow(scm1)==ncol(scm1))
+  scm1<- scm_verifyScm(scm1)
+  scm2<- scm_verifyScm(scm2)
 
   result <- data.frame(matrix(nrow = max(c(nrow(scm1),nrow(scm2))),ncol = max(c(ncol(scm1),ncol(scm2)))))
 
