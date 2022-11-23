@@ -24,8 +24,6 @@ vector_createCom<- function(vec,tPlusx=1L){
 
   dfvec<- data.frame(vec,fvec)
 
-  dfvec<- tidyr::drop_na(dfvec)
-
   pg <- progress::progress_bar$new(total=n.levels,format=libGetDataR::util.progress_format())
   for ( .level in levels(vec) ){
     pg$tick()

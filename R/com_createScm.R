@@ -16,6 +16,9 @@ com_createScm<- function(com){
   # divite by total to get probabilities.
   tscm<- tscm/rs
 
+  # replace NA by zero
+  tscm[is.na(tscm)]<- 0
+
   # for possible future usage
   class(tscm)<- c("scm","data.frame")
 

@@ -6,6 +6,7 @@
 #' @references
 #' https://www.geeksforgeeks.org/split-vector-into-chunks-in-r/
 #' @import dplyr
+#' @export
 util_splitIntoChunks<- function(data,n){
   split(data, cut(seq_along(data),n,labels = FALSE)) %>% unname()
 }
