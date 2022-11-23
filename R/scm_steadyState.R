@@ -8,7 +8,8 @@
 #' Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.
 #' @export
 scm_steadyState<- function(scm,n.max=1000){
-  scm<- scm_verifyScm(scm)
+  # learned should not to verify the scm cause this can be used
+  # for another types of scm
 
   simulations<- scm_predict(scm,state=scm[1,],horizon = n.max,steadyState = TRUE)
 

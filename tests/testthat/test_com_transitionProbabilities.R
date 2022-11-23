@@ -5,7 +5,7 @@ load("data/testVec.rda")
 x<- testVec$y.conditionalOccurrenceMatrix
 y<- testVec$y.scm
 
-result<- com_createScm(x)
+result<- com_transitionProbabilities(x)
 
 class(result)<- "data.frame"
 
