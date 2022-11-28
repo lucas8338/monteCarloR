@@ -1,5 +1,5 @@
 #' @title scm_predict
-#' @description do a prediction/simulation using a naive stochastic matrix.
+#' @description do a prediction/simulation using n-step transition probabilities.
 #' @param scm the stochastic matrix.
 #' @param state the initial state. a numeric vector containing the names of the states and probabilities.
 #' @param horizon a numeric is how much simulate.

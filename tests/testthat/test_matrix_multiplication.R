@@ -9,8 +9,8 @@ x<- data[['x']]
 y<- data[['y']]
 rownames(y)<- rownames(x)
 colnames(y)<- colnames(x)
-class(y)<- c('scm','data.frame')
-testthat::expect_equal(scm_multiply(x,x),y)
+class(y)<- 'data.frame'
+testthat::expect_equal(matrix_multiplication(x,x),y)
 
 
 

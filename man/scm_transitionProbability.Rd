@@ -15,7 +15,7 @@ scm_transitionProbability(scm, state)
 a numeric vector containing the probabilities
 }
 \description{
-return the probability transition for the next state
+calculate the one step transition probability.
 }
 \references{
 Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.

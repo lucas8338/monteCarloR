@@ -1,4 +1,4 @@
-#' @title com_transitionProbabilities
+#' @title matrix_transitionProbabilities
 #' @description calculate the transition probabilities from a com (Conditional Occurrence Matrix).
 #' basicaly what this will do id to divide each value for the sum of the values of their row.
 #' @param com the Conditional Occurrence Matrix.
@@ -6,7 +6,7 @@
 #' @references
 #' Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 3.
 #' @export
-com_transitionProbabilities<- function(com){
+matrix_transitionProbabilities<- function(com){
   # tscm means: Temporary scm
   tscm<- com
 

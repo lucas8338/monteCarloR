@@ -1,4 +1,4 @@
-#' @title util_splitIntoChunks
+#' @title vector_splitIntoChunks
 #' @description function will split data into chunks
 #' @param data a vector
 #' @param n the number of chunks
@@ -7,6 +7,6 @@
 #' https://www.geeksforgeeks.org/split-vector-into-chunks-in-r/
 #' @import dplyr
 #' @export
-util_splitIntoChunks<- function(data,n){
+vector_splitIntoChunks<- function(data,n){
   split(data, cut(seq_along(data),n,labels = FALSE)) %>% unname()
 }

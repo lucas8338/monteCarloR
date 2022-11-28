@@ -6,7 +6,7 @@
 #' Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 7.3.
 #' @export
 scm_statesTimes<- function (scm){
-  multipliedMatrix<- scm_multiply(scm,scm)
+  multipliedMatrix<- matrix_multiplication(scm,scm)
   result<- c()
   for ( .column in colnames(multipliedMatrix) ){
     result[[.column]]<- sum(multipliedMatrix[,.column])*(1/3)

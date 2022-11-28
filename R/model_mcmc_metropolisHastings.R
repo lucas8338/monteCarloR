@@ -1,4 +1,4 @@
-#' @title mcmc_metropolisHastings
+#' @title model_mcmc_metropolisHastings
 #' @description the metropolis-hastings algorithm, a
 #' improvement for metropolis algorithm (metropolis: 1953; hastings: 1970).
 #' @param scm a data.frame with a stochastic matrix.
@@ -14,7 +14,7 @@
 #' https://stephens999.github.io/fiveMinuteStats/MH_intro.html
 #' @import dplyr
 #' @export
-mcmc_metropolisHastings<- function(scm,x_0,n,dist=scm_steadyState(scm)){
+model_mcmc_metropolisHastings<- function(scm,x_0,n,dist=scm_steadyState(scm)){
   result<- c()
 
   # initialize the x_t

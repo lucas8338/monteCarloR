@@ -19,7 +19,7 @@ scm_predict(scm, state, horizon, steadyState = TRUE)
 a data.frame with the columns: choosen state, and the probabilities of each state.
 }
 \description{
-do a prediction/simulation using a naive stochastic matrix.
+do a prediction/simulation using n-step transition probabilities.
 }
 \references{
 Markov Chains, From Theory to Implementation and Experimentation, Paul A. Gagniuc, chapter: 4.

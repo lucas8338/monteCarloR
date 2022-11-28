@@ -10,7 +10,7 @@ data<- list(
 x <- data$x
 y <- data$y
 
-returns<- mcmc_metropolisHastings(testMatrix2,'S',10000)
+returns<- model_mcmc_metropolisHastings(testMatrix2,'S',10000)
 returns.probs<- c(S=length(which(returns=='S'))/length(returns),R=length(which(returns== "R"))/length(returns))
 
 # as is a mcmc the the tolerance is 2 percent from the correct results

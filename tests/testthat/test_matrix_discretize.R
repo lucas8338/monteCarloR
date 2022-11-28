@@ -7,4 +7,4 @@ data[['y']][['second']]<- as.factor(data[['y']][['second']])
 
 x<- data[['x']]
 y<- data[['y']]
-testthat::expect_equal(df_discretize(x,4,n.custom = list("second"=2)),y)
+testthat::expect_equal(matrix_discretize(x,4,n.custom = list("second"=2)),y)

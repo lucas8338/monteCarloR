@@ -5,4 +5,4 @@ data<- list(
 
 x<- data[['x']]
 y<- unname(data[['y']])
-testthat::expect_equal(util_splitIntoChunks(x,4),y)
+testthat::expect_equal(vector_splitIntoChunks(x,4),y)
