@@ -9,6 +9,12 @@
 matrix_power<- function(.matrix,n){
   # check whether the number is a integer (without decimal).
   stopifnot("for now this function cant do power by number with decimals (i dont know even this is possible)."=n%%1==0)
+
+  # if the n=1 power by 1 is itself.
+  if ( n==1 ){
+    return(.matrix)
+  }
+
   result<- .matrix
   # is 'n-1' cause the loop starts on one.
   for ( i in 1:(n-1) ){

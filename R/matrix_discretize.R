@@ -7,21 +7,24 @@
 #' @import dplyr
 #' @export
 matrix_discretize<-function(data,n,n.custom=NULL){
+  # select only numeric columns from data
+  data<- dplyr::select_if(data,is.numeric)
+
+  pg<- progress::progress_bar$new(total=length(colnames(data)),format=libGetDataR::util.progress_format())
   for ( colname in colnames(data) ){
-    uniques<- unique(data[[colname]])
-    if ( libGetDataR::check.is_characterNumeric(uniques) ){
-      uniques<- uniques %>% as.numeric() %>% sort()
-    }else{
-      uniques<- uniques %>% sort()
+    pg$tick()
+    uniques<- unique(data[[colname]]) %>% sort()
+    n<- ifelse(colname%in%names(n.custom),n.custom[[colname]],n)
+    breaks<- vector_splitIntoChunks(uniques,n)
+    
+    pgi<- progress::progress_bar$new(total=length(breaks),format=libGetDataR::util.progress_format())
+    for ( .break in breaks ){
+      pgi$tick()
+      .min<- min(.break)
+      .max<- max(.break)
+      data[which(data[,colname] %in% .break),colname]<- glue::glue("[{.min},{.max}]")
     }
-    if ( length(uniques)>1 && is.numeric(data[[colname]]) ){
-      chunks<- vector_splitIntoChunks(uniques,ifelse(colname%in%names(n.custom),n.custom[[colname]],n))
-      for ( part in chunks ){
-        lastPartValue<- part[[length(part)]]
-        data[[colname]][which(suppressWarnings(as.numeric(data[[colname]]))<=lastPartValue)]<- glue::glue("x<={lastPartValue}")
-      }
-      data[[colname]]<- as.factor(data[[colname]])
-    }
+    data[[colname]]<- as.factor(data[[colname]])
   }
   data
 }
