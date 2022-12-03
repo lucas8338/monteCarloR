@@ -104,7 +104,7 @@ names(CkF)<- .levels
 # to learn what i did read:
 # https://math.stackexchange.com/questions/1954992/linear-programming-minimizing-absolute-values-and-formulate-in-lp
 partAll.matrix<- dplyr::bind_rows(partAll)
-differences<- rowSums(partAll.matrix) - Xs[[k]]
+differences<- colSums(partAll.matrix) - Xs[[k]]
 
 lp.direction<- 'max'
 lp.coefs<- CkF
