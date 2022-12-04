@@ -4,12 +4,12 @@
 \alias{vector_createCom}
 \title{vector_createCom}
 \usage{
-vector_createCom(vec, tPlusx = 1L)
+vector_createCom(vec, tPlusX = 1L)
 }
 \arguments{
 \item{vec}{a vector of factors.}
 
-\item{tPlusx}{the difference of step of the next value. is globaly used t_n+1.}
+\item{tPlusX}{the difference of step of the next value. is globaly used t_n+1.}
 }
 \value{
 a data.frame with equal number of rows and columns and equal names in colnames and rownames with

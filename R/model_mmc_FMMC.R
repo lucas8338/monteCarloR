@@ -6,151 +6,103 @@
 #' in Egypt: New Approach
 #' A. M. Elshehawey
 #' https://doi.org/10.1007/s42519-021-00179-y
+#' @import foreach
 #' @export
+model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(data[[k]])),options=list('generations'=100)){
+  cl<- parallel::makeCluster(spec = parallel::detectCores(),type = 'PSOCK')
+  doSNOW::registerDoSNOW(cl)
 
-library(foreach)
-cl<- parallel::makeCluster(spec = parallel::detectCores(),type = 'PSOCK')
-doSNOW::registerDoSNOW(cl)
+  # calculate states occurrency probability
+  # folowing the example at pag.: 15. chapter: 5.1.
+  Xs<- list()
+  for ( .colName in colnames(data) ){
+    occurrencyProbability<- vector_occurrencyProbability(data[[.colName]]) %>% as.data.frame()
+    occurrencyProbabilityTransposed<- t(occurrencyProbability) %>% as.data.frame()
+    Xs[[.colName]]<- occurrencyProbabilityTransposed
+  }
 
-load("./data/cryptoWExog.rda")
-
-data<- cryptoWExog[,c(1,2:10)]
-
-data[[1]]<- libGetDataR::transf.diff(data[[1]])
-
-data<- tidyr::drop_na(data)
-
-data<- matrix_discretize(data,n=100)
-
-# data to test, providen by the paper
-data<- data.frame('S1'=as.factor(c(3,4,2,2,1,2,3,4,2,2,3,4)),'S2'=as.factor(c(3,1,1,1,1,3,2,2,4,1,2,2)))
-# the index of the endog
-k<- 1
-
-# n is the actual time, in this case i'm using the index
-n<- nrow(data)
-
-# m is the number of datas
-m<- ncol(data)
-# check for:
-# Assume that there are m ≥ 2. pag: 5.
-stopifnot(ncol(data)>=2)
-
-# the amount of order
-r<- 2
-
-# calculate states occurrency probability
-# folowing the example at pag.: 15. chapter: 5.1.
-Xs<- list()
-for ( .colName in colnames(data) ){
-  occurrencyProbability<- vector_occurrencyProbability(data[[.colName]]) %>% as.data.frame()
-  occurrencyProbabilityTransposed<- t(occurrencyProbability) %>% as.data.frame()
-  Xs[[.colName]]<- occurrencyProbabilityTransposed
-}
-
-# calculate the Ps for 'k' index
-Ps11<- foreach::foreach(i=1:r)%dopar%{
-  com<- vector_createCom(data[[k]],tPlusX = i)
-  scm<- matrix_transitionProbabilities(com)
-  attributes(scm)[['iValue']]<- i
-  scm
-}
-Ps<- list()
-Ps[[colnames(data)[[k]]]]<- Ps11
+  # calculate the Ps for 'k' index
+  Ps11<- foreach::foreach(i=1:r,.export = c('vector_createCom','matrix_transitionProbabilities'))%dopar%{
+    com<- vector_createCom(data[[k]],tPlusX = i)
+    scm<- matrix_transitionProbabilities(com)
+    attributes(scm)[['iValue']]<- i
+    scm
+  }
+  Ps<- list()
+  Ps[[colnames(data)[[k]]]]<- Ps11
 
 
-partOne<- list()
-for ( i in 1:r ){
-  P<- Ps[[k]][[i]]
-  X<- Xs[[k]]
-  # check if the i of P is realy the correct (cause can happen errors during parallelization)
-  stopifnot(attributes(P)[['iValue']]==i)
-  # the order of multiplication of two matrixes are X * P cause in the paper the author uses a
-  # columnar matrix (columns to rows) and here i'm using a 'row to column' matrix, so in matrix
-  # multiplication the order matter, and i tested the correct order for me is X then P ( X * P )
-  # so or i invert the multiplication or invert where to apply the transpose. choose invert the multiplication.
-  calc<- matrix_multiplication(X,P)
-  partOne<- append(partOne,list(calc))
-}
-
-partTwo<- list()
-for ( j in 1:m ){
-  # dont allow j be equal to k
-  if ( j==k ){next}
+  partOne<- list()
   for ( i in 1:r ){
-    X<- Xs[[j]]
-    partTwo<- append(partTwo,list(X))
+    P<- Ps[[k]][[i]]
+    X<- Xs[[k]]
+    # check if the i of P is realy the correct (cause can happen errors during parallelization)
+    stopifnot(attributes(P)[['iValue']]==i)
+    # the order of multiplication of two matrixes are X * P cause in the paper the author uses a
+    # columnar matrix (columns to rows) and here i'm using a 'row to column' matrix, so in matrix
+    # multiplication the order matter, and i tested the correct order for me is X then P ( X * P )
+    # so or i invert the multiplication or invert where to apply the transpose. choose invert the multiplication.
+    calc<- matrix_multiplication(X,P)
+    partOne<- append(partOne,list(calc))
   }
-}
 
-partAll<- c(partOne,partTwo)
-
-s<- ncol(partAll[[1]])
-
-.levels<- c()
-for ( i in 1:(length(partAll)) ){
-  .level<- rep(as.character(i),s)
-  .levels<- append(.levels,.level)
-}
-
-# CkF means: CkFlatten
-CkF<- dplyr::bind_cols(partAll) %>% as.numeric()
-names(CkF)<- .levels
-
-# distances
-# bellow will calculate the distance from the X(k) as in the papaer: minimize||B*y ~ y||
-# the objective of this is to minimize the difference between the new data and the X(k)n
-# to do this i need do add some contraints to the linear programming model,
-# to learn what i did read:
-# https://math.stackexchange.com/questions/1954992/linear-programming-minimizing-absolute-values-and-formulate-in-lp
-partAll.matrix<- dplyr::bind_rows(partAll)
-differences<- colSums(partAll.matrix) - Xs[[k]]
-
-lp.direction<- 'max'
-lp.coefs<- CkF
-# initialize lp.const which will receiver the constraint matrix
-lp.const<- data.frame()
-# initialize lp.constDir
-lp.constDir<- c()
-# initialize lp.constValues which will take the values of the constraints
-lp.constValues<- c()
-
-# generate a const matrix to bind values of coefs together
-variables_equalizer.const<- lp_generateConstraintsSameValues(CkF,as.factor(names(CkF)))
-variables_equalizer.condtDir<- rep("==",nrow(variables_equalizer.const))
-variables_equalizer.constValues<- rep(0,nrow(variables_equalizer.const))
-
-lp.const<- rbind(lp.const,variables_equalizer.const)
-lp.constDir<- append(lp.constDir,variables_equalizer.condtDir)
-lp.constValues<- append(lp.constValues,variables_equalizer.constValues)
-
-# add a const matrix which will take the first element ef each level and set to one
-levelsCol.const<- data.frame(matrix(0,nrow = s,ncol = length(CkF)))
-for ( i in 1:s ){
-  for ( .level in unique(names(CkF)) ){
-    levelsCol.const[i, grep(.level,names(CkF))[[i]] ]<- 1
+  partTwo<- list()
+  for ( j in 1:m ){
+    # dont allow j be equal to k
+    if ( j==k ){next}
+    for ( i in 1:r ){
+      X<- Xs[[j]]
+      partTwo<- append(partTwo,list(X))
+    }
   }
+
+  partAll<- c(partOne,partTwo)
+
+  partAll.matrix<- dplyr::bind_rows(partAll)
+
+  # the function to optimize
+  # bellow will calculate the distance from the X(k) as in the papaer: minimize||B*y ~ y||
+  # the objective of this optimization is to minimize the difference between the new data and the X(k)n
+  # to do this i need do add some contraints to the linear programming model,
+  # to learn what i did read:
+  # https://math.stackexchange.com/questions/1954992/linear-programming-minimizing-absolute-values-and-formulate-in-lp
+  opt.func<- function(vec){
+    # multiply every value of vec to rows of partAll.matrix
+    result<- partAll.matrix * vec
+    sums<- colSums(result)
+    differences.1<- sums - Xs[[k]]
+    differences.2<- Xs[[k]] - sums
+    loss<- data.frame(matrix(nrow = 1,ncol = length(sums)))
+    for ( i in 1:(ncol(loss)) ){
+      loss[1,i]<- max(c(differences.1[[i]],differences.2[[i]]))
+    }
+    as.matrix(loss)
+  }
+
+  opt.const<- function(vec){
+    .sum<- sum(vec)
+    max(c(.sum - 1, 1 - .sum))
+  }
+
+  solution<- mco::nsga2(fn=opt.func,
+             idim = s,
+             odim = s,
+             constraints = opt.const,
+             cdim = 1,
+             lower.bounds = rep(0,s),
+             upper.bounds = rep(1,s),
+             generations = options[['generations']]
+  )
+
+  # check the therent optmum
+
+  opt.bestResult<- solution$par[which.min(rowSums(solution$value)),]
+
+  result<- colSums(partAll.matrix*opt.bestResult)
+
+  if ( sum(result)>1 ){
+    warning("the sum of result ( sum(result) ) is bigger than one, is better this value be lower or equal to 1, try to increase the options$generations number")
+  }
+
+  result
 }
-
-levelsCol.constDir<- rep(">=",nrow(levelsCol.const))
-levelsCol.constValues<- differences
-
-lp.const<- rbind(lp.const,levelsCol.const)
-lp.constDir<- append(lp.constDir,levelsCol.constDir)
-lp.constValues<- append(lp.constValues,levelsCol.constValues)
-
-paramsSumEqualOne.const<- data.frame(matrix(1/s,nrow = 1,ncol = length(CkF)))
-paramsSumEqualOne.constDir<- "=="
-paramsSumEqualOne.constValues<- 1
-
-lp.const<- rbind(lp.const,paramsSumEqualOne.const)
-lp.constDir<- append(lp.constDir,paramsSumEqualOne.constDir)
-lp.constValues<- append(lp.constValues,paramsSumEqualOne.constValues)
-
-solution<- lpSolve::lp(direction = lp.direction,
-                       objective.in = lp.coefs,
-                       const.mat = as.matrix(lp.const),
-                       const.dir = lp.constDir,
-                       const.rhs = lp.constValues
-)
-
