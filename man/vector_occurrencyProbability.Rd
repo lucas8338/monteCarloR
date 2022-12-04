@@ -6,6 +6,9 @@
 \usage{
 vector_occurrencyProbability(vec)
 }
+\arguments{
+\item{vec}{the data vector.}
+}
 \value{
 a named numeric vector with probabilities
 }

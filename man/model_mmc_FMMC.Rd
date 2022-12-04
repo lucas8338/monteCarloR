@@ -10,8 +10,29 @@ model_mmc_FMMC(
   r,
   n = nrow(data),
   m = ncol(data),
-  s = length(levels(data[[k]]))
+  s = length(levels(data[[k]])),
+  options = list(generations = 100, n.threads = min(c(parallel::detectCores(), r)))
 )
+}
+\arguments{
+\item{data}{a data.frame containing columns, each data.frame needs to have the sames factors levels.}
+
+\item{k}{the index of the endog column.}
+
+\item{r}{is the order or the model. if how much past data probabilities to consider.}
+
+\item{n}{is the actual time in the data. (taken automaticaly).}
+
+\item{m}{is the number of datas. (taken automaticaly).}
+
+\item{s}{is the number of states. (taken automaticaly).}
+
+\item{options}{takes a list with values for additional options, these options there'nt no correlation with the model
+itself but are paramether for things used to implement, for example the n.threads.}
+}
+\value{
+return a numeric vector with the probabilities for X_n+1 (the next state). the names of the vector
+are the names of the levels of factor.
 }
 \description{
 implements the model FM-MC from their paper.
