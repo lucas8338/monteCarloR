@@ -18,7 +18,7 @@
 #' https://doi.org/10.1007/s42519-021-00179-y
 #' @import foreach
 #' @export
-model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(data[[k]])),options=list( 'generations'=100,'n.threads'=min(c(parallel::detectCores(),r)) )){
+model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(data[[k]])),options=list( 'generations'=100 )){
   # check if the levels over all data are equals
   for ( i in 2:(ncol(data)) ){
     stopifnot("the levels of datas cant be different."= all( levels(data[[i]]) %in% levels(data[[i-1]]) ) )
@@ -28,17 +28,13 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
   # constraint created by me avouid r be bigger than n.
   stopifnot(r <= n)
 
-  cl<- parallel::makeCluster(spec = parallel::detectCores(),type = 'PSOCK')
-  doSNOW::registerDoSNOW(cl)
-  on.exit( parallel::stopCluster(cl) )
-
   # calculate states occurrency probability
   # folowing the example at pag.: 15. chapter: 5.1.
   # then improving to with with: 'n-i+1'.
   Xs<- list()
   for ( .colName in colnames(data) ){
-    Xs[[.colName]]<-
-      foreach::foreach ( i= 1:r ,.packages = c('dplyr'),.export = c('vector_occurrencyProbability','get'))%dopar%{
+    Xs[[.colName]]<- list()
+    for ( i in 1:r ){
       selection<- n-i+1
       # was used the 'occurrencyProbability' which is a simple number of occurrences (nocurrence/lenght(data))
       # instead a conditional probability (which is most common in markov chains) cause this way was used
@@ -46,48 +42,23 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
       # the second motive is this function is supose to be used in stochastic stationary timeseries, so the probabilities
       # are not constrained for a especific state, for example, the returns of a stock data, the return Xn can be 0.001
       # the probability of Xn+1 is not constrained, it can be -infinite to infinite states, so it can be any state.
-      Xi<- vector_occurrencyProbability(data[1:(selection),.colName]) %>% t() %>% as.data.frame()
-      attr(Xi,'iValue')<- selection
-      Xi
-    }
-    # the loop bellow will transform the names of indexes of Xs[[.colName]] into characters
-    # with the number of lag, this way i can acces these variables by a character.
-    for ( i in 1:(length(Xs[[.colName]])) ){
-      # will to use 1 fixed cause at last line i'm droping the first index, so as are indexes
-      # the index [[2]] becomes [[1]] again, so i'll always to use [[1]]
-      idx<- 1
-      iValue<- attr(Xs[[.colName]][[ idx ]],'iValue')
-      Xs[[.colName]][[as.character(iValue)]]<- Xs[[.colName]][[ idx ]]
-      Xs[[.colName]]<- Xs[[.colName]][ -idx ]
+      Xs[[.colName]][[as.character(selection)]]<- vector_occurrencyProbability(data[1:(selection),.colName]) %>% t() %>% as.data.frame()
     }
   }
-  invisible(gc())
 
   # calculate the Ps for 'k' index
-  Ps11<-
-    foreach::foreach(i=1:r,.export = c('vector_createCom','matrix_transitionProbabilities'))%dopar%{
+  Ps<- list()
+  for ( i in 1:r ){
     com<- vector_createCom(data[[k]],tPlusX = i)
     scm<- matrix_transitionProbabilities(com)
-    attr(scm,'iValue')<- i
-    scm
+    Ps[[ colnames(data)[[k]] ]][[ as.character(i) ]]<- scm
   }
-  # set the values of Ps11 to a list with the name of colnames(data)[[k]]
-  Ps<- list()
-  Ps[[ colnames(data)[[k]] ]]<- Ps11
-
-  # stop the cluster cause it will not to be used then remove the actual on.exit
-  parallel::stopCluster(cl)
-  # a empty on.exit remove the existing, it is in their the documentation.
-  on.exit()
-  invisible(gc())
 
   # the first summatory of equation (2.3) in the paper.
   partOne<- list()
   for ( i in 1:r ){
-    P<- Ps[[k]][[i]]
-    X<- Xs[[k]][[as.character(n-i+1)]]
-    # check if the i of P is realy the correct (cause can happen errors during parallelization)
-    stopifnot(attributes(P)[['iValue']]==i)
+    P<- Ps[[k]][[ as.character(i) ]]
+    X<- Xs[[k]][[ as.character(n-i+1) ]]
     # the order of multiplication of two matrixes are X * P cause in the paper the author uses a
     # columnar matrix (columns to rows) and here i'm using a 'row to column' matrix, so in matrix
     # multiplication the order matter, and i tested the correct order for me is X then P ( X * P )
@@ -103,7 +74,7 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
     # dont allow j be equal to k
     if ( j==k ){next}
     for ( i in 1:r ){
-      X<- Xs[[j]][[as.character(n-i+1)]]
+      X<- Xs[[j]][[ as.character(n-i+1) ]]
       partTwo<- append(partTwo,list(X))
     }
   }
