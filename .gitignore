@@ -2,3 +2,5 @@
 .idea
 cmake-build-debug
 CMakeLists.txt
+# this file is intend to run codes for testing in development.
+.test.R

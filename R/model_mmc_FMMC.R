@@ -57,7 +57,7 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
   # the first summatory of equation (2.3) in the paper.
   partOne<- list()
   for ( i in 1:r ){
-    P<- Ps[[k]][[ as.character(i) ]]
+    P<- Ps[[ colnames(data)[[k]] ]][[ as.character(i) ]]
     X<- Xs[[k]][[ as.character(n-i+1) ]]
     # the order of multiplication of two matrixes are X * P cause in the paper the author uses a
     # columnar matrix (columns to rows) and here i'm using a 'row to column' matrix, so in matrix
