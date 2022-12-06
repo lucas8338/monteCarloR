@@ -90,45 +90,43 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
   # to learn what i did read:
   # https://math.stackexchange.com/questions/1954992/linear-programming-minimizing-absolute-values-and-formulate-in-lp
   opt.func<- function(vec){
+    # will create a vector with size of nrow(partAll.matrix)
+    # to do the multiplication. as in the paper only the partOne must
+    # be multiplied by the params, so i'll multiplier the partTwo by 1.
+    params<- c(vec,rep(1,length(partTwo)))
     # multiply every value of vec to rows of partAll.matrix
     result<- partAll.matrix * vec
     sums<- colSums(result)
-    differences.1<- sums - Xs[[k]][[as.character(n)]]
-    differences.2<- Xs[[k]][[as.character(n)]] - sums
-    loss<- data.frame(matrix(nrow = 1,ncol = length(sums)))
-    for ( i in 1:(ncol(loss)) ){
-      loss[1,i]<- max(c(differences.1[[i]],differences.2[[i]]))
-    }
-    as.matrix(loss)
+    differences<- abs(sums - Xs[[k]][[as.character(n)]])
+    as.matrix(differences)
   }
 
   opt.const<- function(vec){
-    .sum<- sum(vec)
-    max(c(.sum - 1, 1 - .sum))
+    # i'll use negative abs cause in the mco::nsga2 uses for the constraint function
+    # the objective is to get a values equal o bigger than 0 ( it was accepted by the constraint ).
+    # so the objective of the constraint in mco::nsga2 is to get the loss of this function
+    # at least equal to zero, so for example: if you want x >= 5 you can just to use: a function
+    # which returns x - 5.
+    -abs(sum(vec)-1)
   }
 
   solution<- mco::nsga2(fn=opt.func,
-             idim = s,
+             idim = length(partOne),
              odim = s,
              constraints = opt.const,
              cdim = 1,
-             lower.bounds = rep(0,s),
-             upper.bounds = rep(1,s),
-             generations = options[['generations']]
+             lower.bounds = rep(0,length(partOne)),
+             upper.bounds = rep(1,length(partOne)),
+             generations = options$generations
   )
-
-  # check if there'nt optmum
-  if ( all(solution$pareto.optimal)==FALSE ){
-    stop("HAD NO OPTIMUM SOLUTION, try to increasing the options$generations")
-  }
 
   opt.bestResult<- solution$par[which.min(rowSums(solution$value)),]
 
-  result<- colSums(partAll.matrix*opt.bestResult)
+  # check if the sum of parameter are equal to one
+  maximumAcceptableDiff<- 0.01
+  stopifnot("the sum of all parameters cant be different than one ( with a acceptable margin. )."=abs(sum(opt.bestResult)-1)<=maximumAcceptableDiff)
 
-  if ( sum(result)>1 ){
-    warning("the sum of result ( sum(result) ) is bigger than one, is better this value be lower or equal to 1, try to increase the options$generations number")
-  }
+  result<- colSums(partAll.matrix*opt.bestResult)
 
   result
 }
