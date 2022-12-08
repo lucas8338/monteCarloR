@@ -1,5 +1,6 @@
 #' @title model_mmc_FMMC
-#' @description implements the model FM-MC from their paper.
+#' @description implements the model FM-MC from their paper. this model is indtended to work only for
+#' sequences are positively correlated.
 #' @param data a data.frame containing columns, each data.frame needs to have the sames factors levels.
 #' @param k the index of the endog column.
 #' @param r is the order or the model. if how much past data probabilities to consider.
@@ -18,7 +19,7 @@
 #' https://doi.org/10.1007/s42519-021-00179-y
 #' @import foreach
 #' @export
-model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(data[[k]])),options=list( 'generations'=100 )){
+model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(data[[k]])),options=list( 'popsize'=4*s, 'generations'=100 )){
   # check if the levels over all data are equals
   for ( i in 2:(ncol(data)) ){
     stopifnot("the levels of datas cant be different."= all( levels(data[[i]]) %in% levels(data[[i-1]]) ) )
@@ -117,6 +118,7 @@ model_mmc_FMMC<- function(data,k,r,n=nrow(data),m=ncol(data),s=length(levels(dat
              cdim = 1,
              lower.bounds = rep(0,length(partOne)),
              upper.bounds = rep(1,length(partOne)),
+             popsize = options$popsize,
              generations = options$generations
   )
 
