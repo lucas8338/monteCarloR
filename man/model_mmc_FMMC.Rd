@@ -11,7 +11,7 @@ model_mmc_FMMC(
   n = nrow(data),
   m = ncol(data),
   s = length(levels(data[[k]])),
-  options = list(generations = 100, n.threads = min(c(parallel::detectCores(), r)))
+  options = list(popsize = 4 * s, generations = 100)
 )
 }
 \arguments{
@@ -35,7 +35,8 @@ return a numeric vector with the probabilities for X_n+1 (the next state). the n
 are the names of the levels of factor.
 }
 \description{
-implements the model FM-MC from their paper.
+implements the model FM-MC from their paper. this model is indtended to work only for
+sequences are positively correlated.
 }
 \references{
 A Gradual Facilitate High‑Order Multivariate Markov Chains

@@ -1,9 +1,11 @@
 #' @title matrix_createMultivariateFromExogCom
-#' @description this is calculate the conditional number of occorrences from levels of a sequence (exog)
-#' cause another one (endog) C(endog|exog) occurrence of endog given exog.
+#' @description this will calculate the conditional number of occorrences from levels of a sequence (exog)
+#' cause another one (endog) C(endog|exog) number occurrences of endog given exog.
 #' @param endog a factor vector.
 #' @param exog a factor vector, the levels need to be the same as in endog.
-#' @return a data.frame with the number of occurrences.
+#' @param tPlusX the order ( lag ) for the function. 1 means: does the previous value of exog
+#' predicts the actual value of endog.
+#' @return a data.frame with integers, rownames are the levels of exog and columns are the levels of endog.
 #' @export
 matrix_createMultivariateFromExogCom<- function(endog,exog,tPlusX=1L){
   # from rows causes columns
