@@ -7,7 +7,7 @@
 #' @references
 #' https://web.stanford.edu/class/archive/cs/cs109/cs109.1178/lectureHandouts/110-normal-distribution.pdf
 #' @export
-pdf_normal<- function(x,mean=1,stddev=1){
+pdf_normal<- function(x,mean=0,stddev=1){
   e<- exp(1)
   part1<- 1.0/(stddev*sqrt(2.0*pi))
   part2<- e^(-(1.0/2.0)*((x-mean)/stddev)^2)

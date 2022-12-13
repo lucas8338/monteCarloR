@@ -4,7 +4,7 @@
 \alias{cdf_normal}
 \title{cdf_normal}
 \usage{
-cdf_normal(x, mean, stddev)
+cdf_normal(x, mean = 0, stddev = 1)
 }
 \arguments{
 \item{x}{a double.}

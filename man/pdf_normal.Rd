@@ -4,7 +4,7 @@
 \alias{pdf_normal}
 \title{pdf_normal}
 \usage{
-pdf_normal(x, mean = 1, stddev = 1)
+pdf_normal(x, mean = 0, stddev = 1)
 }
 \arguments{
 \item{x}{the target}
