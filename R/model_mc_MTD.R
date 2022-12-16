@@ -74,13 +74,15 @@ model_mc_MTD<- function(data,l,t=length(data)){
     abs(sum(lambdas)-1)
   }
 
-  opt.solution<- nloptr::nloptr(x0=rep(1,length(probs)),
+  suppressWarnings(
+    opt.solution<- nloptr::nloptr(x0=rep(1,length(probs)),
                  eval_f = opt.func,
                  eval_g_ineq = opt.const,
                  lb = rep(0,length(probs)),
                  ub = rep(1+1e-3,length(probs)),
                  opts = list('algorithm'='NLOPT_LN_COBYLA','maxeval'=Inf)
                  )
+   )
 
   lambdas<- opt.solution$solution
 
