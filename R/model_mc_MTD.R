@@ -9,7 +9,7 @@
 #' Statistical Science 2002, Vol. 17, No. 3, 328–356
 #' @import dplyr
 #' @export
-model_mc_MTD<- function(data,l,t=length(data)){
+model_mc_MTD<- function(data,l,t=length(data),options.optimizer.maxIter=1000){
   ########################################################################################################################
   #| estimates probabilities
   ########################################################################################################################
@@ -80,7 +80,7 @@ model_mc_MTD<- function(data,l,t=length(data)){
                  eval_g_ineq = opt.const,
                  lb = rep(0,length(probs)),
                  ub = rep(1+1e-3,length(probs)),
-                 opts = list('algorithm'='NLOPT_LN_COBYLA','maxeval'=Inf)
+                 opts = list('algorithm'='NLOPT_LN_COBYLA','maxeval'=options.optimizer.maxIter)
                  )
    )
 

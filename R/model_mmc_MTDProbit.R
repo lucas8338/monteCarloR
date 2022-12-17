@@ -21,7 +21,7 @@
 #' doi: 10.1007/s10690-019-09282-4
 #' @import dplyr
 #' @export
-model_mmc_MTDProbit<- function(data, j, l, nj0, type, fiFunc = function(d){cdf_normal(d,mean=0,stddev=1)}, s = ncol(data), t = nrow(data)){
+model_mmc_MTDProbit<- function(data, j, l, nj0, type, fiFunc = function(d){cdf_normal(d,mean=0,stddev=1)}, s = ncol(data), t = nrow(data),options.optimizer.maxIter=1000){
   # this implementation will have two ways to find the values of njs (the lambda), the first way
   # is when the levels of all datas are equal, for this, the formula (6) can be used
   # but when the levels of the datas are different the optimization problem
@@ -141,7 +141,7 @@ model_mmc_MTDProbit<- function(data, j, l, nj0, type, fiFunc = function(d){cdf_n
   suppressWarnings(
     opt.solution<- nloptr::nloptr(x0=rep(1,length(Pjst)),
                      eval_f = ifelse(type=='dependent',opt.func.dependent,opt.func.independent),
-                     opts = list('algorithm'='NLOPT_LN_COBYLA','maxeval'=Inf)
+                     opts = list('algorithm'='NLOPT_LN_COBYLA','maxeval'=options.optimizer.maxIter)
     )
   )
 
