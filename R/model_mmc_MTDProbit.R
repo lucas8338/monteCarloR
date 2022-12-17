@@ -27,6 +27,8 @@ model_mmc_MTDProbit<- function(data, j, l, nj0, type, fiFunc = function(d){cdf_n
   # but when the levels of the datas are different the optimization problem
   # becomes the formula (7a) and (7b)
 
+  stopifnot(type=='dependent' || type=='independent')
+
   ########################################################################################################################
   #| estimate Pjst
   ########################################################################################################################
