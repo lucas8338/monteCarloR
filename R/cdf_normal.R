@@ -6,5 +6,5 @@
 #' @return a double
 #' @export
 cdf_normal<- function(x,mean=0,stddev=1){
-  1/2 * ( 1 + mat_erf( (x-mean)/(stddev*sqrt(2)) ) )
+  1/2 * ( 1 + math_erf( (x-mean)/(stddev*sqrt(2)) ) )
 }
