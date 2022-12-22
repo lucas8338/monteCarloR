@@ -118,8 +118,7 @@ model_mmc_MTDProbit<- function(data,j,l,nj0=0,fiFunc=function(d){cdf_normal(d,me
     # the return of this function is multiplied by -1 cause the nlopt package only works with minimization
     # and dont work with maximization, a maximization can be solved by the inverse of the negative of the loss.
     # argmin -loss == argmax loss.
-    # and the sum of loss realy can be any vector norm, in this case is the taxicab norm, which is the default
-    # and the result of uptim this function is equivalent to using the maxLik package without the sum.
+    # uptim this function (with sum of the distribution) is equivalent to using the maxLik package without the sum.
     -sum(loss)
   }
 
