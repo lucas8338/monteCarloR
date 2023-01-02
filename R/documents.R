@@ -7,3 +7,10 @@
 #' @docType data
 #' @keywords data
 NULL
+
+#' @title dataset: factoredCurrenciesWEI
+#' @name factoredCurrenciesWEI
+#' @description the BNBUSD data with factors and indicators all are factors.
+#' @docType data
+#' @keywords data
+NULL

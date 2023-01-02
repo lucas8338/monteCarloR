@@ -4,3 +4,5 @@ cmake-build-debug
 CMakeLists.txt
 # this file is intend to run codes for testing in development.
 .test.R
+# file inside the R folder starting with '.' are for testing (R dont recognize files starting with dot)
+/R/.*
