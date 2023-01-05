@@ -1,4 +1,4 @@
-load("/data/testMatrixFactors.rda")
+load("data/testMatrixFactors.rda")
 
 data<- testMatrixFactors
 

@@ -1,6 +1,6 @@
 Package: monteCarloR
 Title: Monte Carlo algorithms and models
-Version: 1.2.0.2
+Version: 1.2.1.0
 Authors@R:
     person("Lucas", "Monteiro", , "lucas.ma8338@gmail.com", role = c("aut", "cre"))
 Description: contains explained and easy to use markov chains, mcmc and others algorithms and models.
