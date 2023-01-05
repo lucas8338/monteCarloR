@@ -6,7 +6,7 @@
 #' @param exogs a list with factors vectors, the (givens).
 #' @param tPlusX a integer is the leading to be applied to the endog 1 means: ('actual exogs can bredics the next endog').
 #' @param combinationsFunction a function which takes the exogs (a list with factor vectors) and return a data.frame
-#' with the combinations, each column of each row is a level.
+#' with the combinations, each column of each row is a level. expand.grid does it.
 #' @param options.nThread the number of threads to be used by foreach.
 #' @param options.threadType the type of thread of the foreach.
 #' @return a data.frame with number of occurrences.
@@ -47,8 +47,11 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
     combination<- exogs.combinations[i,]
     idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
     for ( .colLevel in levels(endog) ){
-      trueFalseDf<- times==c(combination, .colLevel)
+      # will return a data.frame with TRUE or FALSE on each column.
+      trueFalseDf<- times==c(combination, .colLevel) # bool
+      # bellow will do the summation of the rows with true.
       trueFalseSummedVector<- trueFalseDf %>% rowSums()
+      # to check if all values were true the sum of the values of the row need to be equal to number of columns.
       ans[idx, .colLevel]<- which(trueFalseSummedVector == ncol(times)) %>% length()
     }
     ans
