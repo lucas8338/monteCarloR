@@ -28,7 +28,9 @@ model_mmc_ShinnigamiLeftWing(
 
 \item{options.nThread}{the number of threads to be used by parallelization.}
 
-\item{options.nInnerThread}{the number of threads of the internal function. (i dont see any motive to use more than 1).}
+\item{options.nInnerThread}{the number of threads of the internal function. increasing it is good for a high level
+or a very high number of levels, for level 3 or bigger is recommended nThread=1 (or bigger) and a high value nInnerThread. and
+with a high value of this and a low value of nThread the progress bar will be updated quickly.}
 
 \item{options.threadType}{the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 parallel package.}

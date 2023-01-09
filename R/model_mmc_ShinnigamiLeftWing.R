@@ -6,7 +6,9 @@
 #' @param tPlusX the number of leading to apply to endog, tPlusX 1 means "does actual exogs predicts the next endog?".
 #' @param levels.length the maximum of combinations to obtain at each level. Inf if all combinations are wanted.
 #' @param options.nThread the number of threads to be used by parallelization.
-#' @param options.nInnerThread the number of threads of the internal function. (i dont see any motive to use more than 1).
+#' @param options.nInnerThread the number of threads of the internal function. increasing it is good for a high level
+#' or a very high number of levels, for level 3 or bigger is recommended nThread=1 (or bigger) and a high value nInnerThread. and
+#' with a high value of this and a low value of nThread the progress bar will be updated quickly.
 #' @param options.threadType the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 #' parallel package.
 #' @return a list with data.frames
