@@ -8,14 +8,9 @@ matrix_createMultivariateMultipleFromExogsCom(
   endog,
   exogs,
   tPlusX = 1L,
-  combinationsFunction = function(data) {
-     combinations <- expand.grid(data)
-    
-    combinations <- combinations[sample(1:(nrow(combinations))), ]
-    
-    rownames(combinations) <- NULL
-     combinations
- },
+  combinations.max = Inf,
+  combinations.randomize = TRUE,
+  combinations.function = expand.grid,
   options.nThread = parallel::detectCores(),
   options.threadType = ifelse(Sys.info()["sysname"] == "Windows", "PSOCK", "FORK")
 )
@@ -27,8 +22,13 @@ matrix_createMultivariateMultipleFromExogsCom(
 
 \item{tPlusX}{a integer is the leading to be applied to the endog 1 means: ('actual exogs can bredics the next endog').}
 
-\item{combinationsFunction}{a function which takes the exogs (a list with factor vectors) and return a data.frame
-with the combinations, each column of each row is a level.}
+\item{combinations.max}{the number of combinations to be used, if all combinations is wanted, set it to Inf.}
+
+\item{combinations.randomize}{a logical if should to randomize the indexes of combinations, this way the combinations
+will be random.}
+
+\item{combinations.function}{a function which takes the exogs (a list with factor vectors) and return a data.frame
+with the combinations, each column of each row is a level. expand.grid does it.}
 
 \item{options.nThread}{the number of threads to be used by foreach.}
 

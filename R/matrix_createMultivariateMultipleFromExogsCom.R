@@ -5,17 +5,16 @@
 #' @param endog a factor vector, is the endog (cause).
 #' @param exogs a list with factors vectors, the (givens).
 #' @param tPlusX a integer is the leading to be applied to the endog 1 means: ('actual exogs can bredics the next endog').
-#' @param combinationsFunction a function which takes the exogs (a list with factor vectors) and return a data.frame
+#' @param combinations.max the number of combinations to be used, if all combinations is wanted, set it to Inf.
+#' @param combinations.randomize a logical if should to randomize the indexes of combinations, this way the combinations
+#' will be random.
+#' @param combinations.function a function which takes the exogs (a list with factor vectors) and return a data.frame
 #' with the combinations, each column of each row is a level. expand.grid does it.
 #' @param options.nThread the number of threads to be used by foreach.
 #' @param options.threadType the type of thread of the foreach.
 #' @return a data.frame with number of occurrences.
-matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L, combinationsFunction= function(data){
-  combinations<- expand.grid(data)
-  combinations<- combinations[ sample(1:(nrow(combinations))) ,]
-  rownames(combinations)<- NULL
-  combinations
-},options.nThread= parallel::detectCores(), options.threadType=ifelse(Sys.info()['sysname']=='Windows','PSOCK','FORK')){
+#' @export
+matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L, combinations.max=Inf, combinations.randomize=TRUE, combinations.function=expand.grid,options.nThread= parallel::detectCores(), options.threadType=ifelse(Sys.info()['sysname']=='Windows','PSOCK','FORK')){
   # create processes for parallelization
   cl<- parallel::makeCluster(options.nThread,options.threadType)
   doSNOW::registerDoSNOW(cl)
@@ -31,7 +30,23 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
   # exogs.combinations must contain a data.frame with the combinations
   # each column of each row must contain a state of aa exog.
   # one example of this should work is the function 'expand.grid'.
-  exogs.combinations<- combinationsFunction(exogs.levels)
+  exogs.combinations<- combinations.function(exogs.levels)
+
+  rownames(exogs.combinations)<- NULL
+
+  # configure the number of wanted indexes
+  if ( combinations.max > nrow(exogs.combinations) ){
+    combinations.max<- nrow(exogs.combinations)
+  }
+
+  # randomize the indexes
+  if ( combinations.randomize==TRUE ){
+    randomizedIndexes<- sample(1:(nrow(exogs.combinations)), replace = FALSE)
+    exogs.combinations<- exogs.combinations[ randomizedIndexes ,]
+  }
+
+  # take only the number of wanted indexes
+  exogs.combinations<- exogs.combinations[ 1:combinations.max ,]
 
   ########################################################################################################################
   #| bellow will take each combination (or a number of combinations) and calculate the com of them, and append
