@@ -1,14 +1,14 @@
 #' @title model_mmc_ShinnigamiLeftWing
 #' @description calculate probabilities of multiple possibilities given the exogs factors.
 #' @param endog a factor vector containig the endog (causes).
-#' @param exogs a data.frame with the exogs data, this is the (given).
+#' @param exogs a data.frame with the exogs data, this is the (given) all need to be factors.
 #' @param levels a integer vector contaning values to the levels, the min(levels) need to be >=2.
 #' @param tPlusX the number of leading to apply to endog, tPlusX 1 means "does actual exogs predicts the next endog?".
 #' @param levels.length the maximum of combinations to obtain at each level. Inf if all combinations are wanted.
-#' @param options.nThread the number of threads to be used by parallelization.
+#' @param options.nOuterThread the number of threads to be used by parallelization.
 #' @param options.nInnerThread the number of threads of the internal function. increasing it is good for a high level
-#' or a very high number of levels, for level 3 or bigger is recommended nThread=1 (or bigger) and a high value nInnerThread. and
-#' with a high value of this and a low value of nThread the progress bar will be updated quickly.
+#' or a very high number of levels, for level 3 or bigger is recommended nOuterThread=1 (or bigger) and a high value nInnerThread. and
+#' with a high value of this and a low value of nOuterThread the progress bar will be updated quickly.
 #' @param options.threadType the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 #' parallel package.
 #' @return a list with data.frames
@@ -17,12 +17,10 @@
 #' @import dplyr
 #' @import foreach
 #' @export
-model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels, tPlusX=1, levels.length=rep(Inf, length(levels)), options.nThread=parallel::detectCores(), options.nInnerThread=1, options.threadType=ifelse(Sys.info()['sysname']=='Windows', 'PSOCK', 'FORK')){
-  stopifnot("level1 is fast to be calculated and is basic, so this will be calculated anyway, so levels need to be bigger than 2" = min(levels)>1)
-
+model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels.length=rep(Inf, length(levels)), options.nOuterThread=parallel::detectCores(), options.nInnerThread=1, options.threadType=ifelse(Sys.info()['sysname']=='Windows', 'PSOCK', 'FORK')){
   # set the outfile location, will be the temp folder.
   outfile<- stringr::str_c(Sys.getenv('TEMP'),'/ShinnigamiLeftWing_outfile.txt')
-  cl<- parallel::makeCluster(options.nThread, options.threadType, outfile=outfile)
+  cl<- parallel::makeCluster(options.nOuterThread, options.threadType, outfile=outfile)
   doSNOW::registerDoSNOW(cl)
   on.exit(parallel::stopCluster(cl))
 
@@ -47,28 +45,42 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels, tPlusX=1, levels.l
 
   # function to be passed to .options.snow
   progressBarUpdate<- function(n){
-    # will do the update of the progress bar, the: 'total-total/options.nThread' is because the 100%
-    # will not be 100, but need to be taken the number of threads in count.
+    # will do the update of the progress bar.
     pg$update(n/.GlobalEnv$.total)
   }
 
   # formated to be passed to .options.snow
   .options.snow<- list('progress' = progressBarUpdate)
 
+  # a variable to store the step to print
+  step<- 0
+  step.total<- length(levels)
+
   ########################################################################################################################
   #| calculate level1
   ########################################################################################################################
 
-  print( glue::glue("Step (1/{length(levels)+1}): calculating level1...") )
-  pg<- progressBar(ncol(exogs))
-  result[[ 'level1' ]]<- foreach::foreach( i=1:(ncol(exogs)), .packages = 'dplyr',.export = 'matrix_createMultivariateFromExogCom', .inorder = FALSE, .options.snow = .options.snow )%dopar%{
-    com<- matrix_createMultivariateFromExogCom(endog, exogs[[i]], tPlusX = tPlusX)
-    rownames(com)<- paste0(glue::glue("{colnames(exogs)[[i]]}="), rownames(com))
-    com
+  if ( 1 %in% levels ){
+    step<- step+1
+    print( glue::glue("Step ({step}/{step.total}): calculating level1...") )
+    pg<- progressBar(ncol(exogs))
+    result[[ 'level1' ]]<- foreach::foreach( i=1:(ncol(exogs)), .packages = 'dplyr',.export = 'matrix_createMultivariateFromExogCom', .inorder = FALSE, .options.snow = .options.snow )%dopar%{
+      com<- matrix_createMultivariateFromExogCom(endog, exogs[[i]], tPlusX = tPlusX)
+      rownames(com)<- paste0(glue::glue("{colnames(exogs)[[i]]}="), rownames(com))
+      com
+    }
+    result[[ 'level1' ]]<- dplyr::bind_rows(result[[ 'level1' ]])
+    # terminate the progress bar
+    pg$terminate()
   }
-  result[[ 'level1' ]]<- dplyr::bind_rows(result[[ 'level1' ]])
-  # terminate the progress bar
-  pg$terminate()
+
+  # will return if is wanted only level 1
+  if ( max(levels)==1 ){
+    return(result)
+  }
+
+  # remove the index where value is 1
+  levels<- levels[which(levels != 1)]
 
   #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   ########################################################################################################################
@@ -76,7 +88,8 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels, tPlusX=1, levels.l
   ########################################################################################################################
 
   for ( i in 1:(length(levels)) ){
-    print( glue::glue("Step ({i+1}/{length(levels)+1}): calculating level{levels[i]}...") )
+    step<- step+1
+    print( glue::glue("Step ({step}/{step.total}): calculating level{levels[i]}...") )
     # a variable will contain the index of this level in the result list.
     levelIdx<- glue::glue("level{levels[i]}")
     # generate combinations, each combination is a column. rows are the columns names.
