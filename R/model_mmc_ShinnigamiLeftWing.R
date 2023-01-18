@@ -96,7 +96,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
     combinations<- utils::combn(colnames(exogs), m=levels[i]) %>% as.data.frame()
     print( glue::glue("estimating {ncol(combinations)} combinations...") )
     # the level length parameter (combinations.max in the inner function)
-    ll<- (levels.length[i] / ncol(combinations)) %>% round(.,digits = 0)
+    ll<- (levels.length[i] / ncol(combinations)) %>% ceiling()
     # initialize the progress bar
     pg<- progressBar(ncol(combinations))
     # the main loop of this function.
