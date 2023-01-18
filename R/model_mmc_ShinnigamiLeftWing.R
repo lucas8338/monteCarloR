@@ -4,7 +4,10 @@
 #' @param exogs a data.frame with the exogs data, this is the (given) all need to be factors.
 #' @param levels a integer vector contaning values to the levels, the min(levels) need to be >=2.
 #' @param tPlusX the number of leading to apply to endog, tPlusX 1 means "does actual exogs predicts the next endog?".
-#' @param levels.length the maximum of combinations to obtain at each level. Inf if all combinations are wanted.
+#' @param levels.length the maximum of combinations to obtain from levels > 1 (level 1 will not use this). Inf if all
+#' combinations are wanted. for example level 2 calculate only 100000 combinations and level 3 calculate 10000 you can set:
+#' levels.length= c(100000,10000). the 100000 will be use by the first index in the levels parameter and 10000 by the
+#' second index in the levels parameter. (as said level1 dont use this).
 #' @param options.nOuterThread the number of threads to be used by parallelization.
 #' @param options.nInnerThread the number of threads of the internal function. increasing it is good for a high level
 #' or a very high number of levels, for level 3 or bigger is recommended nOuterThread=1 (or bigger) and a high value nInnerThread. and
