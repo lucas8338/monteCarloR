@@ -101,7 +101,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
     pg<- progressBar(ncol(combinations))
     # the main loop of this function.
     result[[ levelIdx ]]<-
-      foreach::foreach( j=1:(ncol(combinations)), .options.snow=.options.snow )%do%{
+      foreach::foreach( j=1:(ncol(combinations)) )%do%{
         combination<- combinations[[ j ]]
         com<- matrix_createMultivariateMultipleFromExogsCom(endog, exogs[,combination], tPlusX = tPlusX, combinations.max = ll, options.nThread = options.nThread, options.threadType = options.threadType)
         # will return a list of lists, where each indice of sublist is a character, this
@@ -122,6 +122,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
         # of each row comcatenated as character separated (what was columns) using the separator "'space'&'space'".
         comNames<- do.call(paste,c(comNames, sep=' & '))
         rownames(com)<- comNames
+        progressBarUpdate(j)
         com
       }
     result[[ levelIdx ]]<- dplyr::bind_rows(result[[ levelIdx ]])
