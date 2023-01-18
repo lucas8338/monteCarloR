@@ -8,10 +8,7 @@
 #' combinations are wanted. for example level 2 calculate only 100000 combinations and level 3 calculate 10000 you can set:
 #' levels.length= c(100000,10000). the 100000 will be use by the first index in the levels parameter and 10000 by the
 #' second index in the levels parameter. (as said level1 dont use this).
-#' @param options.nOuterThread the number of threads to be used by parallelization.
-#' @param options.nInnerThread the number of threads of the internal function. increasing it is good for a high level
-#' or a very high number of levels, for level 3 or bigger is recommended nOuterThread=1 (or bigger) and a high value nInnerThread. and
-#' with a high value of this and a low value of nOuterThread the progress bar will be updated quickly.
+#' @param options.nThread the number of threads to run paralelly.
 #' @param options.threadType the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 #' parallel package.
 #' @return a list with data.frames
@@ -20,10 +17,10 @@
 #' @import dplyr
 #' @import foreach
 #' @export
-model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels.length=rep(Inf, length(levels)), options.nOuterThread=parallel::detectCores(), options.nInnerThread=1, options.threadType=ifelse(Sys.info()['sysname']=='Windows', 'PSOCK', 'FORK')){
+model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels.length=rep(Inf, length(levels)), options.nThread=parallel::detectCores(), options.threadType=ifelse(Sys.info()['sysname']=='Windows', 'PSOCK', 'FORK')){
   # set the outfile location, will be the temp folder.
   outfile<- stringr::str_c(Sys.getenv('TEMP'),'/ShinnigamiLeftWing_outfile.txt')
-  cl<- parallel::makeCluster(options.nOuterThread, options.threadType, outfile=outfile)
+  cl<- parallel::makeCluster(options.nThread, options.threadType, outfile=outfile)
   doSNOW::registerDoSNOW(cl)
   on.exit(parallel::stopCluster(cl))
 
@@ -104,9 +101,9 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
     pg<- progressBar(ncol(combinations))
     # the main loop of this function.
     result[[ levelIdx ]]<-
-      foreach::foreach( j=1:(ncol(combinations)), .packages = c('dplyr','foreach'), .export = 'matrix_createMultivariateMultipleFromExogsCom', .inorder = FALSE, .options.snow=.options.snow )%dopar%{
+      foreach::foreach( j=1:(ncol(combinations)) )%do%{
         combination<- combinations[[ j ]]
-        com<- matrix_createMultivariateMultipleFromExogsCom(endog, exogs[,combination], tPlusX = tPlusX, combinations.max = ll, options.nThread = options.nInnerThread, options.threadType = options.threadType)
+        com<- matrix_createMultivariateMultipleFromExogsCom(endog, exogs[,combination], tPlusX = tPlusX, combinations.max = ll, options.nThread = options.nThread, options.threadType = options.threadType)
         # will return a list of lists, where each indice of sublist is a character, this
         # is without the separator ' & '.
         comNames<- rownames(com) %>% stringr::str_split(.,' & ')

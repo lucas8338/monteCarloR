@@ -7,30 +7,28 @@
 model_mmc_ShinnigamiLeftWing(
   endog,
   exogs,
-  levels,
+  levels = 1,
   tPlusX = 1,
   levels.length = rep(Inf, length(levels)),
   options.nThread = parallel::detectCores(),
-  options.nInnerThread = 1,
   options.threadType = ifelse(Sys.info()["sysname"] == "Windows", "PSOCK", "FORK")
 )
 }
 \arguments{
 \item{endog}{a factor vector containig the endog (causes).}
 
-\item{exogs}{a data.frame with the exogs data, this is the (given).}
+\item{exogs}{a data.frame with the exogs data, this is the (given) all need to be factors.}
 
 \item{levels}{a integer vector contaning values to the levels, the min(levels) need to be >=2.}
 
 \item{tPlusX}{the number of leading to apply to endog, tPlusX 1 means "does actual exogs predicts the next endog?".}
 
-\item{levels.length}{the maximum of combinations to obtain at each level. Inf if all combinations are wanted.}
+\item{levels.length}{the maximum of combinations to obtain from levels > 1 (level 1 will not use this). Inf if all
+combinations are wanted. for example level 2 calculate only 100000 combinations and level 3 calculate 10000 you can set:
+levels.length= c(100000,10000). the 100000 will be use by the first index in the levels parameter and 10000 by the
+second index in the levels parameter. (as said level1 dont use this).}
 
-\item{options.nThread}{the number of threads to be used by parallelization.}
-
-\item{options.nInnerThread}{the number of threads of the internal function. increasing it is good for a high level
-or a very high number of levels, for level 3 or bigger is recommended nThread=1 (or bigger) and a high value nInnerThread. and
-with a high value of this and a low value of nThread the progress bar will be updated quickly.}
+\item{options.nThread}{the number of threads to run paralelly.}
 
 \item{options.threadType}{the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 parallel package.}
