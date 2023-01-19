@@ -53,11 +53,11 @@ vector_discretize<-function(data,mode='all',options=list()){
       .min<- .levels[[ i-1 ]]
       .max<- .levels[[ i ]]
       .lvStr<- glue::glue("[{.min}, {.max})")
-      allLevels<- append(allLevels,.lvStr)
+      allLevels[[length(allLevels)+1]]<- .lvStr
       data[which(data>=.min & data<.max)]<- .lvStr
     }
     # add a missing level is the max
-    allLevels<- append(allLevels,as.character(max))
+    allLevels[[length(allLevels)+1]]<- as.character(max)
     data<- as.factor(data)
     # add the all laves to the end of levels of data
     attr(data,'levels')<- append(levels(data),allLevels[which(allLevels %in% levels(data)==FALSE)])

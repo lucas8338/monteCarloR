@@ -13,16 +13,12 @@
 #' @param options.nThread the number of threads to be used by foreach.
 #' @param options.threadType the type of thread of the foreach.
 #' @return a data.frame with number of occurrences.
+#' @import dplyr
 #' @export
-matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L, combinations.max=Inf, combinations.randomize=TRUE, combinations.function=expand.grid,options.nThread= parallel::detectCores(), options.threadType=ifelse(Sys.info()['sysname']=='Windows','PSOCK','FORK')){
-  # create processes for parallelization
-  cl<- parallel::makeCluster(options.nThread,options.threadType)
-  doSNOW::registerDoSNOW(cl)
-  on.exit(parallel::stopCluster(cl))
-
+matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L, combinations.max=Inf, combinations.randomize=TRUE, combinations.function=expand.grid){
   # bellow will create the variable 'exogs.levels' that contains the levels of each data
   # in exogs.
-  exogs.levels<- list()
+  exogs.levels<- vector('list', length(exogs)) # prealocate vector
   for ( i in 1:(length(exogs)) ){
     exogs.levels[[ i ]]<- exogs[[ i ]] %>% levels()
   }
@@ -56,9 +52,10 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
 
   # times is a data.frame containing the exogs and a leaded version of the endog.
   times<- data.frame(exogs, 'endog' = dplyr::lead(endog, n=tPlusX))
-  
-  result<- foreach::foreach( i=1:(nrow(exogs.combinations)), .packages = 'dplyr', .inorder = FALSE )%dopar%{
-    ans<- data.frame(matrix(nrow = 0, ncol = 0))
+
+  result<- vector('list', nrow(exogs.combinations)) # prealocate a vector for results
+  for( i in 1:(nrow(exogs.combinations)) ){
+    ans<- data.frame( matrix(nrow = 0, ncol = 0) ) # a bit prealocation.
     combination<- exogs.combinations[i,]
     idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
     for ( .colLevel in levels(endog) ){
@@ -69,7 +66,7 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
       # to check if all values were true the sum of the values of the row need to be equal to number of columns.
       ans[idx, .colLevel]<- which(trueFalseSummedVector == ncol(times)) %>% length()
     }
-    ans
+    result[[i]]<- ans
   }
 
   # return the result
