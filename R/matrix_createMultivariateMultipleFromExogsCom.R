@@ -35,12 +35,14 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
 
   # randomize the indexes
   if ( combinations.randomize==TRUE ){
-    randomizedIndexes<- sample(1:(nrow(exogs.combinations)), replace = FALSE)
+    randomizedIndexes<- sample(1:(nrow(exogs.combinations)), size=combinations.max, replace = FALSE)
     exogs.combinations<- exogs.combinations[ randomizedIndexes ,]
   }
 
   # take only the number of wanted indexes
-  exogs.combinations<- exogs.combinations[ 1:combinations.max ,]
+  if ( nrow(exogs.combinations) > combinations.max ){
+    exogs.combinations<- exogs.combinations[ 1:combinations.max ,]
+  }
 
   ########################################################################################################################
   #| bellow will take each combination (or a number of combinations) and calculate the com of them, and append
@@ -60,7 +62,7 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
 
   # prealoc a vector which will be used to set the values to the data.frame 'ans'.
   vectorToSet<- vector('list', 2)
-  
+
   for( i in 1:(nrow(exogs.combinations)) ){
     combination<- exogs.combinations[i,]
     idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
