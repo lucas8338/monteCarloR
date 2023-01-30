@@ -10,9 +10,7 @@ matrix_createMultivariateMultipleFromExogsCom(
   tPlusX = 1L,
   combinations.max = Inf,
   combinations.randomize = TRUE,
-  combinations.function = expand.grid,
-  options.nThread = parallel::detectCores(),
-  options.threadType = ifelse(Sys.info()["sysname"] == "Windows", "PSOCK", "FORK")
+  combinations.function = expand.grid
 )
 }
 \arguments{

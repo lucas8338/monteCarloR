@@ -66,7 +66,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
     pg<- progressBar(ncol(exogs))
     result[[ 'level1' ]]<- foreach::foreach( i=1:(ncol(exogs)), .packages = 'dplyr',.export = 'matrix_createMultivariateFromExogCom', .inorder = FALSE, .options.snow = .options.snow )%dopar%{
       com<- matrix_createMultivariateFromExogCom(endog, exogs[[i]], tPlusX = tPlusX)
-      rownames(com)<- paste0(glue::glue("{colnames(exogs)[[i]]}="), rownames(com))
+      rownames(com)<- paste0(colnames(exogs)[[i]], '=', rownames(com))
       com
     }
     result[[ 'level1' ]]<- dplyr::bind_rows(result[[ 'level1' ]])
@@ -112,11 +112,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, levels
         # bellow will apply the name of the column for each column of the comNames
         # to follow the standard: {colname}={state}
         for ( k in 1:(ncol(comNames)) ){
-          # the variabele 'combination' is a vector with the name of each column of this combination
-          # i'll acess it using a loop (j) and will use this to format tha names of columns
-          # in comNames.
-          idx<- glue::glue("{combination[[ k ]]}=")
-          comNames[,k]<- paste0(idx, comNames[,k])
+          comNames[[k]]<- paste0(combination[[ k ]], '=', comNames[[k]])
         }
         # bellow will 'concatenate' each row of the data.frame comNames, will return a vector with each value
         # of each row comcatenated as character separated (what was columns) using the separator "'space'&'space'".
