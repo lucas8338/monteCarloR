@@ -28,8 +28,6 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
   # one example of this should work is the function 'expand.grid'.
   exogs.combinations<- combinations.function(exogs.levels)
 
-  rownames(exogs.combinations)<- NULL
-
   # configure the number of wanted indexes
   if ( combinations.max > nrow(exogs.combinations) ){
     combinations.max<- nrow(exogs.combinations)
@@ -53,9 +51,9 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
   # times is a data.frame containing the exogs and a leaded version of the endog.
   times<- data.frame(exogs, 'endog' = dplyr::lead(endog, n=tPlusX))
 
-  result<- vector('list', nrow(exogs.combinations)) # prealocate a vector for results
+  ans<- data.frame( matrix(nrow=nrow(exogs.combinations), ncol = length(levels(endog))+1) )
+  colnames(ans)<- c('idx', levels(endog))
   for( i in 1:(nrow(exogs.combinations)) ){
-    ans<- data.frame( matrix(nrow = 0, ncol = 0) ) # a bit prealocation.
     combination<- exogs.combinations[i,]
     idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
     for ( .colLevel in levels(endog) ){
@@ -64,11 +62,11 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
       # bellow will do the summation of the rows with true.
       trueFalseSummedVector<- trueFalseDf %>% rowSums()
       # to check if all values were true the sum of the values of the row need to be equal to number of columns.
-      ans[idx, .colLevel]<- which(trueFalseSummedVector == ncol(times)) %>% length()
+      ans[i, c('idx', .colLevel)]<- list(idx, which(trueFalseSummedVector == ncol(times)) %>% length())
     }
-    result[[i]]<- ans
   }
 
-  # return the result
-  dplyr::bind_rows(result)
+  rownames(ans)<- ans[['idx']]
+  ans[['idx']]<- NULL
+  ans
   }
