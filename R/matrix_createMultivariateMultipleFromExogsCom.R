@@ -51,8 +51,16 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
   # times is a data.frame containing the exogs and a leaded version of the endog.
   times<- data.frame(exogs, 'endog' = dplyr::lead(endog, n=tPlusX))
 
+  # prealoc a data.frame which will take the results. 'ans' means answer.
+  # the first column of the data.frame will be 'idx' cause i can dinamicaly set
+  # two values to two columns but not for rowname an columns, so this column (idx)
+  # will be used to set the rownames later then will be removed.
   ans<- data.frame( matrix(nrow=nrow(exogs.combinations), ncol = length(levels(endog))+1) )
   colnames(ans)<- c('idx', levels(endog))
+
+  # prealoc a vector which will be used to set the values to the data.frame 'ans'.
+  vectorToSet<- vector('list', 2)
+  
   for( i in 1:(nrow(exogs.combinations)) ){
     combination<- exogs.combinations[i,]
     idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
@@ -61,8 +69,12 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
       trueFalseDf<- times==c(combination, .colLevel) # bool
       # bellow will do the summation of the rows with true.
       trueFalseSummedVector<- trueFalseDf %>% rowSums()
+      # set value for the first index of the prealocated vector
+      vectorToSet[[1]]<- idx
+      # set value for the second index of the prealocated vector
+      vectorToSet[[2]]<- which(trueFalseSummedVector == ncol(times)) %>% length()
       # to check if all values were true the sum of the values of the row need to be equal to number of columns.
-      ans[i, c('idx', .colLevel)]<- list(idx, which(trueFalseSummedVector == ncol(times)) %>% length())
+      ans[i, c('idx', .colLevel)]<- vectorToSet
     }
   }
 
