@@ -113,6 +113,9 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         # of each row comcatenated as character separated (what was columns) using the separator "'space'&'space'".
         comNames<- do.call(paste,c(comNames, sep=' & '))
         rownames(com)<- comNames
+        # call gc on multiple of 10 iteration (this avoid
+        # commit size be a lot larger than active memory).
+        if ( j %% 10 == 0 ){ invisible(gc()) }
         com
       }
     result[[ levelIdx ]]<- dplyr::bind_rows(result[[ levelIdx ]])
