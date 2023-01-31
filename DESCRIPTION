@@ -1,12 +1,12 @@
 Package: monteCarloR
 Title: Monte Carlo algorithms and models
-Version: 4.0.0.1
+Version: 5.0.0.0
 Authors@R:
     person("Lucas", "Monteiro", , "lucas.ma8338@gmail.com", role = c("aut", "cre"))
 Description: contains explained and easy to use markov chains, mcmc and others algorithms and models.
 License: Attribution-NonCommercial 4.0 International + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
-Depends: R (>= 3.5.0), Rcpp, dplyr, dqrng, glue, progress, foreach, pracma, mco, nloptr, doSNOW, stringr
+RoxygenNote: 7.2.3
+Depends: R (>= 3.5.0), Rcpp, plyr, dplyr, dqrng, glue, progress, foreach, pracma, mco, nloptr, doSNOW, stringr
 Remotes: lucas8338/libGetDataR

@@ -5,45 +5,10 @@
 #' @param endog a factor vector, is the endog (cause).
 #' @param exogs a list with factors vectors, the (givens).
 #' @param tPlusX a integer is the leading to be applied to the endog 1 means: ('actual exogs can bredics the next endog').
-#' @param combinations.max the number of combinations to be used, if all combinations is wanted, set it to Inf.
-#' @param combinations.randomize a logical if should to randomize the indexes of combinations, this way the combinations
-#' will be random.
-#' @param combinations.function a function which takes the exogs (a list with factor vectors) and return a data.frame
-#' with the combinations, each column of each row is a level. expand.grid does it.
-#' @param options.nThread the number of threads to be used by foreach.
-#' @param options.threadType the type of thread of the foreach.
 #' @return a data.frame with number of occurrences.
 #' @import dplyr
 #' @export
-matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L, combinations.max=Inf, combinations.randomize=TRUE, combinations.function=expand.grid){
-  # bellow will create the variable 'exogs.levels' that contains the levels of each data
-  # in exogs.
-  exogs.levels<- vector('list', length(exogs)) # prealocate vector
-  for ( i in 1:(length(exogs)) ){
-    exogs.levels[[ i ]]<- exogs[[ i ]] %>% levels()
-  }
-
-  # exogs.combinations must contain a data.frame with the combinations
-  # each column of each row must contain a state of aa exog.
-  # one example of this should work is the function 'expand.grid'.
-  exogs.combinations<- combinations.function(exogs.levels)
-
-  # configure the number of wanted indexes
-  if ( combinations.max > nrow(exogs.combinations) ){
-    combinations.max<- nrow(exogs.combinations)
-  }
-
-  # randomize the indexes
-  if ( combinations.randomize==TRUE ){
-    randomizedIndexes<- sample(1:(nrow(exogs.combinations)), size=combinations.max, replace = FALSE)
-    exogs.combinations<- exogs.combinations[ randomizedIndexes ,]
-  }
-
-  # take only the number of wanted indexes
-  if ( nrow(exogs.combinations) > combinations.max ){
-    exogs.combinations<- exogs.combinations[ 1:combinations.max ,]
-  }
-
+matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L){
   ########################################################################################################################
   #| bellow will take each combination (or a number of combinations) and calculate the com of them, and append
   #| the distribution of occurrences of each combination to a data.frame. the names of each combination (rownames) of the
@@ -53,34 +18,36 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L,
   # times is a data.frame containing the exogs and a leaded version of the endog.
   times<- data.frame(exogs, 'endog' = dplyr::lead(endog, n=tPlusX))
 
-  # prealoc a data.frame which will take the results. 'ans' means answer.
-  # the first column of the data.frame will be 'idx' cause i can dinamicaly set
-  # two values to two columns but not for rowname an columns, so this column (idx)
-  # will be used to set the rownames later then will be removed.
-  ans<- data.frame( matrix(nrow=nrow(exogs.combinations), ncol = length(levels(endog))+1) )
-  colnames(ans)<- c('idx', levels(endog))
+  # the plyr::ddply will calculate the number of occurrence of each row
+  occurrences<- plyr::ddply(times, colnames(times), nrow)
 
-  # prealoc a vector which will be used to set the values to the data.frame 'ans'.
-  vectorToSet<- vector('list', 2)
+  # create a variable containing only the states
+  ans<- occurrences[,1:(ncol(times)-1)]
 
-  for( i in 1:(nrow(exogs.combinations)) ){
-    combination<- exogs.combinations[i,]
-    idx<- combination %>% unlist() %>% paste(., collapse = ' & ')
-    for ( .colLevel in levels(endog) ){
-      # will return a data.frame with TRUE or FALSE on each column.
-      trueFalseDf<- times==c(combination, .colLevel) # bool
-      # bellow will do the summation of the rows with true.
-      trueFalseSummedVector<- trueFalseDf %>% rowSums()
-      # set value for the first index of the prealocated vector
-      vectorToSet[[1]]<- idx
-      # set value for the second index of the prealocated vector
-      vectorToSet[[2]]<- which(trueFalseSummedVector == ncol(times)) %>% length()
-      # to check if all values were true the sum of the values of the row need to be equal to number of columns.
-      ans[i, c('idx', .colLevel)]<- vectorToSet
-    }
+  # for each state in endog will iterate and will create the column of the state and set the value of numer of
+  # occurrence for that state.
+  for ( i in 1:(length(levels(endog))) ){
+    # contain the actual state (level)
+    .level<- levels(endog)[[i]]
+    # bellow will create the new column and will set the values, the 'which' function is used a lot.
+    ans[ which(occurrences[['endog']]==.level), .level ]<- occurrences[['V1']][ which(occurrences[['endog']]==.level) ]
   }
 
-  rownames(ans)<- ans[['idx']]
-  ans[['idx']]<- NULL
+  # this will take the repaeted first n columns in the ans (coluns which were in the exogs)
+  # then will  summarize it (the remaining columns will be summed with the duplicated of these first columns).
+  ans<- ans %>% dplyr::group_by_at(colnames(ans)[1:(length(exogs))]) %>% dplyr::summarise_at(colnames(ans)[(ncol(times)):(ncol(ans))],.funs=sum,na.rm=TRUE)
+
+  # will generate the names for the rownames, will select the columns which arent the results, and will use paste.
+  ansNames<- do.call(paste, c(ans[, 1:(length(exogs))], sep=' & '))
+
+  # bellow ans will contain only the number of occurrences, cause the states will be the rownames
+  ans<- ans[, (ncol(times)):(ncol(ans))]
+
+  # because the dplyr functions the dplyr functions return a
+  ans<- as.data.frame(ans)
+
+  # set the new rownames
+  rownames(ans)<- ansNames
+
   ans
   }

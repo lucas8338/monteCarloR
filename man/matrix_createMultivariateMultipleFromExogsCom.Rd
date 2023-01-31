@@ -4,14 +4,7 @@
 \alias{matrix_createMultivariateMultipleFromExogsCom}
 \title{matrix_createMultivariateMultipleFromExogsCom}
 \usage{
-matrix_createMultivariateMultipleFromExogsCom(
-  endog,
-  exogs,
-  tPlusX = 1L,
-  combinations.max = Inf,
-  combinations.randomize = TRUE,
-  combinations.function = expand.grid
-)
+matrix_createMultivariateMultipleFromExogsCom(endog, exogs, tPlusX = 1L)
 }
 \arguments{
 \item{endog}{a factor vector, is the endog (cause).}
@@ -19,18 +12,6 @@ matrix_createMultivariateMultipleFromExogsCom(
 \item{exogs}{a list with factors vectors, the (givens).}
 
 \item{tPlusX}{a integer is the leading to be applied to the endog 1 means: ('actual exogs can bredics the next endog').}
-
-\item{combinations.max}{the number of combinations to be used, if all combinations is wanted, set it to Inf.}
-
-\item{combinations.randomize}{a logical if should to randomize the indexes of combinations, this way the combinations
-will be random.}
-
-\item{combinations.function}{a function which takes the exogs (a list with factor vectors) and return a data.frame
-with the combinations, each column of each row is a level. expand.grid does it.}
-
-\item{options.nThread}{the number of threads to be used by foreach.}
-
-\item{options.threadType}{the type of thread of the foreach.}
 }
 \value{
 a data.frame with number of occurrences.
