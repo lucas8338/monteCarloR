@@ -9,7 +9,6 @@ model_mmc_ShinnigamiLeftWing(
   exogs,
   levels = 1,
   tPlusX = 1,
-  levels.length = rep(Inf, length(levels)),
   options.nThread = parallel::detectCores(),
   options.threadType = ifelse(Sys.info()["sysname"] == "Windows", "PSOCK", "FORK")
 )
@@ -22,11 +21,6 @@ model_mmc_ShinnigamiLeftWing(
 \item{levels}{a integer vector contaning values to the levels, the min(levels) need to be >=2.}
 
 \item{tPlusX}{the number of leading to apply to endog, tPlusX 1 means "does actual exogs predicts the next endog?".}
-
-\item{levels.length}{the maximum of combinations to obtain from levels > 1 (level 1 will not use this). Inf if all
-combinations are wanted. for example level 2 calculate only 100000 combinations and level 3 calculate 10000 you can set:
-levels.length= c(100000,10000). the 100000 will be use by the first index in the levels parameter and 10000 by the
-second index in the levels parameter. (as said level1 dont use this).}
 
 \item{options.nThread}{the number of threads to run paralelly.}
 
