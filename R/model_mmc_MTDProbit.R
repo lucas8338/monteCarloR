@@ -22,6 +22,7 @@
 #' JOÃO NICOLAU
 #' doi: 10.1111/sjos.12087
 #' @import dplyr
+#' @import utils
 #' @export
 model_mmc_MTDProbit<- function(data,j,l,nj0=0,fiFunc=function(d){cdf_normal(d,mean = 0,stddev = 1)},s=ncol(data),t=nrow(data), options= list()){
   ########################################################################################################################

@@ -10,7 +10,11 @@ model_mmc_ShinnigamiLeftWing(
   levels = 1,
   tPlusX = 1,
   options.nThread = parallel::detectCores(),
-  options.threadType = ifelse(Sys.info()["sysname"] == "Windows", "PSOCK", "FORK")
+  options.threadType = "PSOCK",
+  options.chunk = FALSE,
+  options.chunkNIter = 100,
+  options.chunkDir = getwd(),
+  options.chunkName = "dist"
 )
 }
 \arguments{
@@ -26,6 +30,19 @@ model_mmc_ShinnigamiLeftWing(
 
 \item{options.threadType}{the type of thread, on windoes this can be PSOCK but linux distros accepts FORK. see about
 parallel package.}
+
+\item{options.chunk}{a logical (TRUE/FALSE) if save the results into files instead return them, if TRUE the return
+of this function will be a NULL.}
+
+\item{options.chunkNIter}{the number of iteration of furthermore levels to save. for example: 100 means to save each
+100 iterations.}
+
+\item{options.chunkDir}{takes a character, is a directory path to save the result of this function, subfolders with the
+names: 'level1', 'level2' and 'level3' will be created, and inside them will be stored .fst files which contains
+each a data.frame.}
+
+\item{options.chunkName}{is a character with the first name for all files, the files are save with the standard
+name: {options.chunkName}.part{nPart}.fst.}
 }
 \value{
 a list with data.frames
