@@ -143,7 +143,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         cat(paste0('running for part ',j,' of ', length(chunksEnds),':', '\n'))
       }
       # initialize the progress bar
-      pg<- progressBar(k.end)
+      pg<- progressBar(length(k.start:k.end))
       dists<-
         foreach::foreach( k = k.start:k.end, .multicombine = TRUE, .inorder = FALSE, .options.snow=.options.snow )%dopar%{
           combination<- combinations[[ k ]]
@@ -174,8 +174,13 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         dists<- cbind(data.frame('rownames'= rownames(dists)), dists)
         # write the fst file
         fst::write_fst(dists, path = paste0(targetDir, '/', options.chunkName, '.part', j, '.fst'))
-        # remove the dists and call gc
+        # remove the dists
         rm(dists)
+        # will restar the cluster to free memory cause removing dists dont free memory fron parallel processes
+        parallel::stopCluster(cl)
+        cl<- parallel::makeCluster(options.nThread, options.threadType, outfile=outfile)
+        doSNOW::registerDoSNOW(cl)
+        # call gc
         invisible(gc())
         # increase the value of j (will stop the loop if j is in the end)
         if ( j == length(chunksEnds) ){ break }else{ j<- j + 1 }
