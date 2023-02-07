@@ -65,6 +65,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
   #| calculate level1
   ########################################################################################################################
 
+  # will run bellow only if level one is wanted
   if ( 1 %in% levels ){
     step<- step+1
     print( glue::glue("Step ({step}/{step.total}): calculating level1...") )
@@ -77,28 +78,30 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
     result[[ 'level1' ]]<- dplyr::bind_rows(result[[ 'level1' ]])
     # terminate the progress bar
     pg$terminate()
-  }
 
-  # create the directory and save if options.chunk is TRUE
-  if ( options.chunk == TRUE ){
-    targetDir<- paste0(options.chunkDir, '/level1')
-    dir.create(path = targetDir, showWarnings = FALSE)
-    dist<- result[[ 'level1' ]]
-    # rownames of data to the first column cause fst dont accept rownames
-    dist<- cbind(data.frame('rownames'=rownames(dist)), dist)
-    # write the file
-    fst::write_fst(dist, path = paste0(targetDir, '/', options.chunkName, '.part1.fst'))
-    rm(dist)
-    invisible(gc())
-  }
 
-  # will return if is wanted only level 1
-  if ( max(levels)==1 ){
-    return(result)
-  }
+    # create the directory and save if options.chunk is TRUE
+    if ( options.chunk == TRUE ){
+      targetDir<- paste0(options.chunkDir, '/level1')
+      dir.create(path = targetDir, showWarnings = FALSE)
+      dist<- result[[ 'level1' ]]
+      # rownames of data to the first column cause fst dont accept rownames
+      dist<- cbind(data.frame('rownames'=rownames(dist)), dist)
+      # write the file
+      fst::write_fst(dist, path = paste0(targetDir, '/', options.chunkName, '.part1.fst'))
+      rm(dist)
+      invisible(gc())
+    }
 
-  # remove the index where value is 1
-  levels<- levels[which(levels != 1)]
+    # will return if is wanted only level 1
+    if ( max(levels)==1 ){
+      return(result)
+    }
+
+    # remove the index where value is 1
+    levels<- levels[which(levels != 1)]
+
+  }
 
   #/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
   ########################################################################################################################
