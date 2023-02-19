@@ -84,7 +84,13 @@ slw_battleForTheApple<- function(dataAll, data1, data2, tPlusX, labelColumn='lab
   defensor.index<- 1
   # store the index of the actual row of the hip.alt data.frame
   attacker.index<- 1
+
+  # a progressbar to be used
+  pg<- progress::progress_bar$new(format="defensor.index: :def.idx | attacker.index: :att.idx | rate: :tick_rate/s | elapsed: :elapsedfull", total=Inf)
   while (TRUE){
+    # update progress bar
+    pg$tick(tokens=list('def.idx'= defensor.index, 'att.idx'= attacker.index))
+
     defensor<- hip.null.names[[defensor.index]]
     attacker<- hip.alt.names[[attacker.index]]
     # name of defensor as a named vector
@@ -96,16 +102,12 @@ slw_battleForTheApple<- function(dataAll, data1, data2, tPlusX, labelColumn='lab
 
     newName<- paste0(attacker, ' & ', defensor)
 
-    # bellow the loop will store the number of occurrences of each column of result
-    # to the result data.frame
-    for ( j in seq_along(colnames(result)) ){
-      # store the equivalent to column 1
-      result[newName, 1]<- which(dataAll[occurrencesIndexes, labelColumn] == result.colnames[[1]]) %>% length()
-      # store the equivalent to column 2
-      result[newName, 2]<- which(dataAll[occurrencesIndexes, labelColumn] == result.colnames[[2]]) %>% length()
-      # store the indexes in the result
-      result[newName, c('defensor.index', 'attacker.index')]<- as.integer(c(defensor.index, attacker.index))
-    }
+    # store the equivalent to column 1
+    result[newName, 1]<- which(dataAll[occurrencesIndexes, labelColumn] == result.colnames[[1]]) %>% length()
+    # store the equivalent to column 2
+    result[newName, 2]<- which(dataAll[occurrencesIndexes, labelColumn] == result.colnames[[2]]) %>% length()
+    # store the indexes in the result
+    result[newName, c('defensor.index', 'attacker.index')]<- as.integer(c(defensor.index, attacker.index))
 
     # if the number of occurrences is lower than a minimum aceptable
     # try with the next attacker, the max attackers are limited.
