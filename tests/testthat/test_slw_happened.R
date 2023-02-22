@@ -2,21 +2,21 @@ load("data/testMatrixFactors.rda")
 
 coms<- model_mmc_ShinnigamiLeftWing(testMatrixFactors[,'endog'], testMatrixFactors[,which(colnames(testMatrixFactors)!='endog')], levels = 1:3)
 
-result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level3']]))
+result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level3']]), levels = 3)
 
-testthat::expect_true(length(valids)==1)
+testthat::expect_true(length(result)==1)
 
 testthat::expect_equivalent(rownames(coms[['level3']])[[result]], 'exog1=5 & exog2=4 & exog3=5')
 
 # tests for level2
 
-result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level2']]))
+result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level2']]), levels = 2)
 
 testthat::expect_true(length(result)==3)
 
 # tests for level1
 
-result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level1']]))
+result<- slw_happened(testMatrixFactors[nrow(testMatrixFactors),], rownames(coms[['level1']]), levels = 1)
 
 testthat::expect_true(length(result)==3)
 
