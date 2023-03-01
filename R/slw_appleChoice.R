@@ -40,7 +40,7 @@ slw_appleChoice<- function(dataAll, current, states, labelColumn, tPlusX){
       result[[ actualLevel ]][j, ]<- result[[ actualLevel ]][j, reducedColnames] == current[, reducedColnames]
     }
     # sums of values which are true in rows (is needed to convert them to local first cause them are characters).
-    result[[ actualLevel ]][[ 'trueSums' ]]<- apply(result[[ actualLevel ]], 1, function(d){sum(as.logical(d))})
+    result[[ actualLevel ]][[ 'trueSums' ]]<- apply(result[[ actualLevel ]], 1, function(d){sum(as.logical(d), na.rm = TRUE)})
   }
   # prealoc the 'duplicates' in result which will store the number of duplicates over above iterations
   result[['duplicates']]<- integer(length(result))
