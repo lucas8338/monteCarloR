@@ -16,13 +16,15 @@
 #' each a data.frame.
 #' @param options.chunkName is a character with the first name for all files, the files are save with the standard
 #' name: {options.chunkName}.part{nPart}.fst.
+#' @param options.chunkContinue bollean whether to continue (resume) to fitting, will load the files: 'combinations.rds',
+#' 'chunksEnds.rds' and 'lastCompletedChunk.rds'.
 #' @return a list with data.frames
 #' @section tip:
 #' after returned the results can be used the function in the package dplyr: dplyr::bind_rows to get a unique data.frame.
 #' @import dplyr
 #' @import foreach
 #' @export
-model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, options.nThread=parallel::detectCores(), options.threadType='PSOCK', options.chunk = FALSE, options.chunkNIter = 100, options.chunkDir = getwd(), options.chunkName='dist'){
+model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, options.nThread=parallel::detectCores(), options.threadType='PSOCK', options.chunk = FALSE, options.chunkNIter = 100, options.chunkDir = getwd(), options.chunkName='dist', options.chunkContinue=TRUE){
   # set the outfile location, will be the temp folder.
   outfile<- stringr::str_c(Sys.getenv('TEMP'),'/ShinnigamiLeftWing_outfile.txt')
   cl<- parallel::makeCluster(options.nThread, options.threadType, outfile=outfile)
@@ -108,33 +110,83 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
   #| calculate furthermore levels
   ########################################################################################################################
 
-  for ( i in 1:(length(levels)) ){
+  # a function to generate the combinations
+  generateCombinations<- function(){
+    # generate combinations, each combination is a column. rows are the columns names.
+    utils::combn(colnames(exogs), m=levels[i]) %>% as.data.frame()
+  }
+  
+  # this function will to deterine the endings indexes of the 'combinations' data.frame to use to saving (chunking)
+  # this will also return the the chunks ends, and to create the folder to save these endings
+  createChunksEnds<- function(){
+    # the estimated number of chunks
+    estimatedNChunks<- ceiling(ncol(combinations) / options.chunkNIter)
+    # array with the endings
+    chunksEnds<- rep( ceiling(ncol(combinations) / estimatedNChunks), estimatedNChunks ) %>% cumsum()
+    # fix the last index
+    chunksEnds[[ length(chunksEnds) ]]<- ncol(combinations)
+    # to return
+    chunksEnds
+  }
+
+  for ( i in seq_along(levels) ){
     step<- step+1
-    print( glue::glue("Step ({step}/{step.total}): calculating level{levels[i]}...") )
+    cat( paste0('Step ', '(', step, '/', step.total, '): ', 'calculating level', levels[[i]], '...', '\n') )
     # a variable will contain the index of this level in the result list.
     levelIdx<- glue::glue("level{levels[i]}")
-    # generate combinations, each combination is a column. rows are the columns names.
-    combinations<- utils::combn(colnames(exogs), m=levels[i]) %>% as.data.frame()
-    print( glue::glue("estimating {ncol(combinations)} combinations...") )
-    # the level length parameter (combinations.max in the inner function)
-    # initialize the progress bar
-    # initialize the variable of the start of the main loop
-    k.start<- 1
-    # start the j iterator
-    j<- 1
+
+    # the SUPOSE path to save the chunk files
+    targetDir<- paste0(options.chunkDir, '/', levelIdx)
+    # this file contains the created combinations
+    path.combinations<- paste0(targetDir, '/combinations.rds')
+    # this file contains the chunksEnds generated (the split)
+    path.chunksEnds<- paste0(targetDir, '/chunksEnds.rds')
+    # this file contains the index of last completed chunk 'j'
+    path.lastCompletedChunk<- paste0(targetDir, '/lastCompletedChunk.rds')
+
+    # the explication of some variables in this if-else statement:
+    # combinations: are the combinations of exogs indicators to use to fitting.
+    # chunksEnds: are the ends for each chunk (when to save).
+    # 'j': is the number of actual part of chunk, so after each chunk be fitted j will
+    # be increased.
+    # 'k.start': is the number of the combination which will be used to start the fitting
+    # the model will fit combinations[k.start:k.end]. so at the end of fitting this will be
+    # 'k.start<- k.end + 1' cause as we saw above j will be increased by one. and we will have
+    # the correct range from start to the end combination siliding together with the fitting
+    # parts.
     if ( options.chunk == TRUE ){
-      # the estimated number of chunks
-      estimatedNChunks<- ceiling(ncol(combinations) / options.chunkNIter)
-      # array with the endings
-      chunksEnds<- rep( ceiling(ncol(combinations) / estimatedNChunks), estimatedNChunks ) %>% cumsum()
-      # fix the last index
-      chunksEnds[[ length(chunksEnds) ]]<- ncol(combinations)
-      # the folder to save
-      targetDir<- paste0(options.chunkDir, '/', levelIdx)
-      # create the subfolder to target dir
-      dir.create(path = targetDir, recursive = TRUE, showWarnings = FALSE)
+      # create the targetDir a dir to save the chunks
+      dir.create(targetDir, showWarnings = FALSE)
+      # will try to continue
+      if ( options.chunkContinue == TRUE && all(file.exists(c(path.combinations, path.chunksEnds, path.lastCompletedChunk))) == TRUE ){
+        combinations<- readRDS(path.combinations)
+        chunksEnds<- readRDS(path.chunksEnds)
+        lastCompletedChunk<- readRDS(path.lastCompletedChunk)
+        j<- lastCompletedChunk + 1
+        k.start<- chunksEnds[[ j - 1 ]] + 1
+        cat('files loaded. continuing fitting...\n')
+      }else{
+        cat('fitting from start...')
+        combinations<- generateCombinations()
+        saveRDS(combinations, file = path.combinations)
+        chunksEnds<- createChunksEnds()
+        saveRDS(chunksEnds, file = path.chunksEnds)
+        j<- 1
+        k.start<- 1
+      }
+    }else{
+      combinations<- generateCombinations()
+      saveRDS(combinations, file = path.combinations)
+      chunksEnds<- createChunksEnds()
+      saveRDS(chunksEnds, file = path.chunksEnds)
+      j<- 1
+      k.start<- 1
     }
-    while (TRUE){
+
+    cat( paste0('total number of combinations: ', ncol(combinations), '\n') )
+    cat( paste0('starting fitting from combination: ', k.start, '\n') )
+
+    repeat{
       # set the value of k.end
       if ( options.chunk == TRUE ){
         k.end<- chunksEnds[[ j ]]
@@ -186,6 +238,8 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         # call gc
         invisible(gc())
         # increase the value of j (will stop the loop if j is in the end)
+        lastCompletedChunk<- j
+        saveRDS(lastCompletedChunk, file = path.lastCompletedChunk, compress = FALSE)
         if ( j == length(chunksEnds) ){ break }else{ j<- j + 1 }
       }else{
         result[[ levelIdx ]]<- dists

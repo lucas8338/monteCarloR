@@ -150,7 +150,11 @@ testthat::expect_equivalent(result6[[ 'level3' ]]['exog1=1 & exog2=5 & exog3=4',
 
 # the place to save the files
 pathDir<- paste0(Sys.getenv("TEMP"), '/test_model_mmc_ShinnigamiLeftWing')
-result<- model_mmc_ShinnigamiLeftWing(testMatrixFactors[[1]], testMatrixFactors[,-1], 1:3, 1, options.chunk = TRUE, options.chunkDir = pathDir, options.chunkNIter = 1)
+# delete the dicrectory
+unlink(pathDir, recursive = TRUE)
+# create the directory
+dir.create(pathDir, showWarnings = FALSE)
+result<- model_mmc_ShinnigamiLeftWing(testMatrixFactors[[1]], testMatrixFactors[,-1], 1:3, 1, options.chunk = TRUE, options.chunkDir = pathDir, options.chunkNIter = 1, options.chunkContinue = FALSE)
 
 # check the structure of files
 # for level1
