@@ -162,6 +162,10 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         combinations<- readRDS(path.combinations)
         chunksEnds<- readRDS(path.chunksEnds)
         lastCompletedChunk<- readRDS(path.lastCompletedChunk)
+        if ( lastCompletedChunk == length(chunksEnds) ){
+          cat( paste0(levelIdx, ' was completed. moving to the next level...', '\n') )
+          next
+        }
         j<- lastCompletedChunk + 1
         k.start<- chunksEnds[[ j - 1 ]] + 1
         cat('files loaded. continuing fitting...\n')
@@ -176,9 +180,7 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
       }
     }else{
       combinations<- generateCombinations()
-      saveRDS(combinations, file = path.combinations)
       chunksEnds<- createChunksEnds()
-      saveRDS(chunksEnds, file = path.chunksEnds)
       j<- 1
       k.start<- 1
     }
