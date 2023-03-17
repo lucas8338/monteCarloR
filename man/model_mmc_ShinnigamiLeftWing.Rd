@@ -14,7 +14,8 @@ model_mmc_ShinnigamiLeftWing(
   options.chunk = FALSE,
   options.chunkNIter = 100,
   options.chunkDir = getwd(),
-  options.chunkName = "dist"
+  options.chunkName = "dist",
+  options.chunkContinue = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ each a data.frame.}
 
 \item{options.chunkName}{is a character with the first name for all files, the files are save with the standard
 name: {options.chunkName}.part{nPart}.fst.}
+
+\item{options.chunkContinue}{bollean whether to continue (resume) to fitting, will load the files: 'combinations.rds',
+'chunksEnds.rds' and 'lastCompletedChunk.rds'.}
 }
 \value{
 a list with data.frames
