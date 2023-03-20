@@ -23,7 +23,7 @@ slw_happened<- function(current, states, levels){
     # update the progress bar
     pb$tick()
     # do the detection and add it to the 'detected' data.frame
-    detected[, i]<- stringr::str_detect(states, current[[i]])
+    detected[, i]<- stringr::str_detect(states, stringr::str_escape(current[[i]]))
   }
   # terminate the progress bar
   pb$terminate()
