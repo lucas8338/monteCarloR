@@ -26,19 +26,34 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L)
 
   # for each state in endog will iterate and will create the column of the state and set the value of numer of
   # occurrence for that state.
-  for ( i in 1:(length(levels(endog))) ){
+  # a variable to store the levels of endog.
+  endogLevels<- levels(endog)
+  for ( i in seq_along(endogLevels) ){
     # contain the actual state (level)
-    .level<- levels(endog)[[i]]
+    .level<- endogLevels[[i]]
     # bellow will create the new column and will set the values, the 'which' function is used a lot.
     ans[ which(occurrences[['endog']]==.level), .level ]<- occurrences[['V1']][ which(occurrences[['endog']]==.level) ]
   }
 
-  # this will take the repaeted first n columns in the ans (coluns which were in the exogs)
+  # the group_by_at will group the data based on the values on a colname (search in web for group_by)
+  # and the results returned have duplicated rows (based on the firsts columns not the columns with the number of occurrences)
+  # and NAs.
+  # for example you can have something like it:
+  # ex1 | ex2 | ex3 | 1 | 2 | 3 | 4 | 5 // columns
+  #  1  |  2  |  3  | NA| NA| 14| NA| NA
+  #  1  |  2  |  3  | 1 | NA| 1 | NA| 1
+  # in the example above look you have two columns with repeated exogs, this is how will come from
+  # the group_by_at, then you need to remove the NA and sum these repeated columns (exogs repeated)
+  # cause you want the example above become:
+  # ex1 | ex2 | ex3 | 1 | 2 | 3 | 4 | 5 // columns
+  #  1     2     3  | 1 | 0 | 15| 0 | 1
+  # you summed the columns and has replaced NA by 0. this is what 'summarize_at' will do.:
+  # the summarize_at will take the repaeted first n columns in the ans (coluns which were in the exogs)
   # then will  summarize it (the remaining columns will be summed with the duplicated of these first columns).
-  ans<- ans %>% dplyr::group_by_at(colnames(ans)[1:(length(exogs))]) %>% dplyr::summarise_at(colnames(ans)[(ncol(times)):(ncol(ans))],.funs=sum,na.rm=TRUE)
+  ans<- ans %>% dplyr::group_by_at(colnames(ans)[seq_len(length(exogs))]) %>% dplyr::summarise_at(., colnames(ans)[(ncol(times)):(ncol(ans))],.funs=sum,na.rm=TRUE)
 
   # will generate the names for the rownames, will select the columns which arent the results, and will use paste.
-  ansNames<- do.call(paste, c(ans[, 1:(length(exogs))], sep=' & '))
+  ansNames<- do.call(paste, c(ans[, seq_len(length(exogs))], sep=' & '))
 
   # bellow ans will contain only the number of occurrences, cause the states will be the rownames
   ans<- ans[, (ncol(times)):(ncol(ans))]
