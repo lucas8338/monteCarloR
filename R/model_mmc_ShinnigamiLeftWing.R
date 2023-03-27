@@ -113,7 +113,13 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
   # a function to generate the combinations
   generateCombinations<- function(){
     # generate combinations, each combination is a column. rows are the columns names.
-    utils::combn(colnames(exogs), m=levels[i]) %>% as.data.frame()
+    combs<- utils::combn(colnames(exogs), m=levels[i]) %>% as.data.frame()
+    # cause the functions utils::combn takes the data as the order them are, this cause
+    # that very large number of combinations, the combinations at last position can never be
+    # processed or take a long time to process them cause the firsts columns will be used
+    # first.
+    combs<- combs[, sample(seq_len(ncol(combs))), drop=FALSE]
+    combs
   }
   
   # this function will to deterine the endings indexes of the 'combinations' data.frame to use to saving (chunking)
