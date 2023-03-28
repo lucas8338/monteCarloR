@@ -211,11 +211,8 @@ model_mmc_ShinnigamiLeftWing<- function(endog, exogs, levels=1, tPlusX=1, option
         foreach::foreach( k = k.start:k.end, .multicombine = TRUE, .inorder = FALSE, .options.snow=.options.snow )%dopar%{
           combination<- combinations[[ k ]]
           com<- matrix_createMultivariateMultipleFromExogsCom(endog, exogs[,combination], tPlusX = tPlusX)
-          # will return a list of lists, where each indice of sublist is a character, this
-          # is without the separator ' & '.
-          comNames<- rownames(com) %>% stringr::str_split(.,' & ')
-          # will does comNames be a vertical data.frame (nrow is bigger than ncol).
-          comNames<- comNames %>% as.data.frame() %>% t() %>% as.data.frame()
+          # will return a data.frame which each column are the values which were splited by the ' & '
+          comNames<- rownames(com) %>% stringr::str_split(.,' & ', simplify = TRUE) %>% as.data.frame()
           # bellow will apply the name of the column for each column of the comNames
           # to follow the standard: {colname}={state}
           for ( k in 1:(ncol(comNames)) ){
