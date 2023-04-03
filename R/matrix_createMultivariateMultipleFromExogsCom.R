@@ -18,11 +18,15 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L)
   # times is a data.frame containing the exogs and a leaded version of the endog.
   times<- data.frame(exogs, 'endog' = dplyr::lead(endog, n=tPlusX))
 
-  # the plyr::ddply will calculate the number of occurrence of each row
-  occurrences<- plyr::ddply(times, colnames(times), nrow)
+  uniques<- unique(times)
+
+  # calculate the number of occurrence of each row or uniques in times.
+  occurrencesCount<- util_countNOccurrencesOfEachRowString(uniques, times)
+
+  occurrences<- cbind(uniques, 'count'=occurrencesCount)
 
   # create a variable containing only the states
-  ans<- occurrences[,1:(ncol(times)-1)]
+  ans<- occurrences[,seq_len(ncol(times)-1)]
 
   # for each state in endog will iterate and will create the column of the state and set the value of numer of
   # occurrence for that state.
@@ -32,7 +36,7 @@ matrix_createMultivariateMultipleFromExogsCom <- function(endog,exogs,tPlusX=1L)
     # contain the actual state (level)
     .level<- endogLevels[[i]]
     # bellow will create the new column and will set the values, the 'which' function is used a lot.
-    ans[ which(occurrences[['endog']]==.level), .level ]<- occurrences[['V1']][ which(occurrences[['endog']]==.level) ]
+    ans[ which(occurrences[['endog']]==.level), .level ]<- occurrences[['count']][ which(occurrences[['endog']]==.level) ]
   }
 
   # the group_by_at will group the data based on the values on a colname (search in web for group_by)
