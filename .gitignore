@@ -6,15 +6,3 @@ CMakeLists.txt
 .test.R
 # file inside the R folder starting with '.' are for testing (R dont recognize files starting with dot)
 /R/.*
-
-# bellow ignores are to ignore files in compiled files
-# ignore dlls from this folder cause R automaticaly compile src
-/src/*.dll
-# ignore .so for the same reason above, .so is for unix-like systems
-/src/*.so
-# a object used only in compilation
-/src/**/*.o
-# .exe windows executables
-/src/**/*.exe
-# .out the default extension for unix-like systems
-/src/**/*.out
